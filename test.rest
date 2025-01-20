@@ -15,12 +15,12 @@ Content-Type: application/json
 
 ### get single post
 
-GET http://localhost:3000/api/posts/9c9468f9-eb6e-46b9-b08c-7cd31f98dc7d
+GET http://localhost:3000/api/posts/be7bedd0-ded2-4b08-b768-eddc538a495b
 Content-Type: application/json
 
 ### patch post
 
-PATCH http://localhost:3000/api/posts/3b42c282-b5cb-4a70-921d-46b9ebaef422
+PATCH http://localhost:3000/api/posts/be7bedd0-ded2-4b08-b768-eddc538a495b
 Content-Type: application/json
 
 {
@@ -30,5 +30,5 @@ Content-Type: application/json
 
 ### delete post
 
-DELETE http://localhost:3000/api/posts/3b42c282-b5cb-4a70-921d-46b9ebaef422
+DELETE http://localhost:3000/api/posts/be7bedd0-ded2-4b08-b768-eddc538a495b
 Content-Type: application/json
