@@ -2,7 +2,6 @@ import { auth, signIn, signOut } from "@/auth";
 
 const Profile = async () => {
   const session = await auth();
-  console.log(session);
 
   const user = session?.user;
 
@@ -12,7 +11,7 @@ const Profile = async () => {
       <form
         action={async () => {
           "use server";
-          await signOut();
+          await signOut({ redirectTo: "/" });
         }}
       >
         <button type="submit">Sign Out</button>

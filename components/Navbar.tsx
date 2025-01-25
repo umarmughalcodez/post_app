@@ -1,22 +1,50 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import { User } from "@/types/User";
 
-const Navbar = () => {
+interface NavbarProps {
+  user: User | null;
+}
+
+const Navbar = ({ user }: NavbarProps) => {
   const pathname = usePathname();
-  console.log(pathname);
+
   return (
     <div className="space-x-12 w-full h-24 flex items-center justify-center">
-      <Link href={"/"} className={pathname === "/" ? "text-slate-400" : ""}>
+      <Link
+        href="/"
+        className={`${
+          pathname === "/"
+            ? "text-slate-400 hover:cursor-pointer"
+            : "hover:text-slate-400 hover:cursor-pointer"
+        }`}
+      >
         Home
       </Link>
-      <Link
-        href={"/posts/create"}
-        className={pathname === "/posts/create" ? "text-slate-400" : ""}
-      >
-        Create Post
-      </Link>
+      {user ? (
+        <Link
+          href="/profile"
+          className={`${
+            pathname === "/profile"
+              ? "text-slate-400 hover:cursor-pointer"
+              : "hover:text-slate-400 hover:cursor-pointer"
+          }`}
+        >
+          Profile
+        </Link>
+      ) : (
+        <Link
+          href="/signin"
+          className={`${
+            pathname === "/signin"
+              ? "text-slate-400 hover:cursor-pointer"
+              : "hover:text-slate-400 hover:cursor-pointer"
+          }`}
+        >
+          Sign In
+        </Link>
+      )}
     </div>
   );
 };

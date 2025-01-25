@@ -11,6 +11,7 @@ model Posts {
   id          String   @id @default(uuid())
   title       String   @db.VarChar(100)
   description String   @db.VarChar(2000)
+  public_id   String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
