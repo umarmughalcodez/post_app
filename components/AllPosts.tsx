@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -6,6 +7,7 @@ interface Post {
   id: string;
   title: string;
   description: string;
+  image_url: string;
 }
 
 const AllPosts = () => {
@@ -55,14 +57,21 @@ const AllPosts = () => {
           <li
             key={post.id}
             className="border border-white w-60 p-2 rounded-xl cursor-pointer
-             hover:bg-slate-900 transition-all delay-150"
+             hover:bg-slate-900 transition-all delay-150 grid place-items-center"
             onClick={() => {
               router.push(`/posts/${post.id}`);
             }}
           >
+            <Image
+              src={post.image_url}
+              alt="Post's Image"
+              width={150}
+              height={150}
+            />
             <p>Title: {post.title}</p>
             <br />
             <p>Description: {post.description}</p>
+            <br />
           </li>
         ))}
       </ul>

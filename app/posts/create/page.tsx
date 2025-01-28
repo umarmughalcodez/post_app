@@ -1,15 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CldUploadWidget } from "next-cloudinary";
+import { CldImage, CldUploadWidget } from "next-cloudinary";
+import { MdDelete } from "react-icons/md";
 
-interface CloudinaryUploadEvent {
-  event: string;
-  info: {
-    public_id: string;
-    [key: string]: any;
-  };
-}
 const createPost = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -25,11 +19,37 @@ const createPost = () => {
     setError(null);
 
     try {
+      if (!publicId || !title || !description) {
+        setError("Please provide all the fields");
+
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
+
+        return;
+      }
+
+      if (title.length < 5) {
+        setError("Title must be at least 5 characters long");
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
+        return;
+      }
+
+      if (description.length < 10) {
+        setError("Description must be at least 10 characters long");
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
+        return;
+      }
+
       setLoading(true);
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description }),
+        body: JSON.stringify({ title, description, publicId }),
       });
 
       if (!res.ok) {
@@ -46,12 +66,22 @@ const createPost = () => {
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
       } else {
         setError("An unexpected error occured");
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteImage = async () => {
+    setPublicId("");
   };
 
   return (
@@ -72,7 +102,21 @@ const createPost = () => {
         />
         <br />
         <label>Image</label>
-        {/*  */}
+        {publicId && (
+          <>
+            <button onClick={handleDeleteImage}>
+              {" "}
+              <MdDelete />
+            </button>
+            <CldImage
+              src={publicId}
+              alt="Post's Image"
+              width={150}
+              height={150}
+            />
+          </>
+        )}
+
         <CldUploadWidget
           uploadPreset="nextjs_posts"
           onSuccess={(event: any) => {

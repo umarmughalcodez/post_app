@@ -2,6 +2,7 @@ import React from "react";
 import { auth, signOut } from "@/auth";
 import Link from "next/link";
 import Image from "next/image";
+import FetchUserPosts from "@/components/FetchUserPosts";
 
 const Profile = async () => {
   const session = await auth();
@@ -12,6 +13,7 @@ const Profile = async () => {
       <h1>Welcome to profile</h1>
       <p>{user.name}</p>
       <p>{user.email}</p>
+      <Link href={"/posts/create"}>Create Post</Link>
       <Image
         src={user.image as string}
         width={50}
@@ -26,6 +28,7 @@ const Profile = async () => {
       >
         <button type="submit">Sign Out</button>
       </form>
+      <FetchUserPosts />
     </>
   ) : (
     <div>

@@ -2,13 +2,22 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { IoCloseSharp } from "react-icons/io5";
+import Image from "next/image";
+// import { auth } from "@/auth";
+import { getSession } from "next-auth/react";
 
 interface Post {
-  // data: {
   id: string;
   title: string;
   description: string;
-  // };
+  image_url: string;
+  userEmail: string;
+}
+
+interface Session {
+  user: {
+    email: string;
+  };
 }
 
 const Post = () => {
@@ -18,36 +27,39 @@ const Post = () => {
 
   const [post, setPost] = useState<Post | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [deletionSuccess, setDeletionSuccess] = useState<boolean>(false);
   const [isFormOpen, setFormOpen] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    setSuccess(null);
     setError(null);
 
     const fetchPost = async () => {
       try {
+        setLoading(true);
         if (!postId || typeof postId !== "string") {
           throw new Error("Invalid post Id");
         }
+
+        const session = await getSession();
+        const user = session?.user;
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        setUserEmail(user.email as string);
 
         const res = await fetch(`/api/posts/${postId}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch post");
-        }
+        // if (!res.ok) {
+        //   throw new Error("Failed to fetch post");
+        // }
 
         const data = await res.json();
         setPost(data.data);
-        setSuccess("Post fetched successfully");
-
-        setTimeout(() => {
-          setSuccess(null);
-        }, 1500);
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
@@ -58,6 +70,8 @@ const Post = () => {
           }, 1500);
         }
         throw new Error("Failed to fetch post");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -65,10 +79,9 @@ const Post = () => {
   }, [postId]);
 
   const deletePost = async () => {
-    setSuccess(null);
     setError(null);
-    setDeletionSuccess(false);
     setFormOpen(false);
+    setDeletionSuccess(false);
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: "DELETE",
@@ -86,12 +99,16 @@ const Post = () => {
     } catch (error) {}
   };
 
-  if (!post) {
-    return <p>Loading ...</p>;
-  }
+  // if (userEmail !== post?.userEmail) {
+  //   return <p>You are not the author of this post</p>;
+  // }
 
   if (deletionSuccess) {
     return <div>Post deleted successfully</div>;
+  }
+
+  if (loading) {
+    return <p>Loading...</p>;
   }
 
   if (isFormOpen) {
@@ -118,28 +135,39 @@ const Post = () => {
 
   return (
     <div className="h-full w-full">
-      <p>Title: {post.title}</p>
-      <p>Description: {post.description}</p>
+      <p>Title: {post?.title}</p>
+      <p>Description: {post?.description}</p>
       <br />
-      {success && (
-        <div className="text-green-700">Post fetched successfully</div>
+      {post?.image_url && (
+        <Image
+          src={post?.image_url as string}
+          alt="Post's Image"
+          width={150}
+          height={150}
+        />
       )}
+
+      {userEmail === post?.userEmail && (
+        <>
+          <button
+            onClick={() => {
+              router.push(`/posts/edit/${post.id}`);
+            }}
+          >
+            Update Post
+          </button>
+          <br />
+          <button
+            onClick={() => {
+              setFormOpen(true);
+            }}
+          >
+            Delete Post
+          </button>
+        </>
+      )}
+
       {error && <div className="text-red-700">{error}</div>}
-      <button
-        onClick={() => {
-          router.push(`/posts/edit/${post.id}`);
-        }}
-      >
-        Update Post
-      </button>
-      <br />
-      <button
-        onClick={() => {
-          setFormOpen(true);
-        }}
-      >
-        Delete Post
-      </button>
     </div>
   );
 };

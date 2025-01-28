@@ -45,6 +45,16 @@ const Navbar = ({ user }: NavbarProps) => {
           Sign In
         </Link>
       )}
+      <Link
+        href="/posts/search"
+        className={`${
+          pathname === "/posts/search"
+            ? "text-slate-400 hover:cursor-pointer"
+            : "hover:text-slate-400 hover:cursor-pointer"
+        }`}
+      >
+        Search
+      </Link>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import prisma from "@/prisma/db.config";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,11 +11,14 @@ export const GET = async (
   context: { params: { id: string } }
 ) => {
   try {
+    const session = await auth();
+    const user = session?.user;
     const { id } = await context.params;
 
     const post = await prisma.posts.findUnique({
       where: {
         id,
+        // userEmail: user?.email as string,
       },
     });
 
@@ -29,14 +33,14 @@ export const GET = async (
   }
 };
 
-export const PATCH = async (
+export const PUT = async (
   req: NextRequest,
   context: { params: { id: string } }
 ) => {
   const { id } = await context.params;
 
   const body = await req.json();
-  const { title, description } = body;
+  const { title, description, image_url } = body;
 
   if (!title && !description) {
     return createResponse(404, "please fill out all the fields");
@@ -60,6 +64,7 @@ export const PATCH = async (
       data: {
         title,
         description,
+        image_url,
       },
     });
 
