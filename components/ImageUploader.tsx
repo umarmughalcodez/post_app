@@ -1,40 +1,52 @@
 "use client";
-import React, { useState } from "react";
-import { CldImage, CldUploadWidget } from "next-cloudinary";
-import Image from "next/image";
+import { CldUploadWidget } from "next-cloudinary";
+import { useState } from "react";
 
-const ImageUploader = () => {
-  const [publicId, setPublicId] = useState("");
+interface ImageUploaderProps {
+  onUpload: (publicId: string) => void;
+}
 
-  let imageUrl;
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
+  const [error, setError] = useState<string>("");
+
   const handleUploadSuccess = async (event: any) => {
-    setPublicId(event.info.public_id);
-    imageUrl =
-      await `https://res.cloudinary.com/xcorpion/image/upload/${publicId}`;
+    setError("");
+    const uploadedPublicId = event.info.public_id;
+
+    onUpload(uploadedPublicId);
+  };
+
+  const handleUploadError = (error: unknown) => {
+    if (typeof error === "string" && error.includes("exceeds")) {
+      setError(
+        "File size exceeds the 2MB limit. Please upload a smaller file."
+      );
+    } else if (error instanceof Error) {
+      setError(error.message);
+    } else {
+      setError("An unexpected error has occured");
+    }
   };
 
   return (
     <div>
-      <p>Upload an Image</p>
+      <p className="text-white">Upload an Image</p>
       <CldUploadWidget
         uploadPreset="nextjs_posts"
         onSuccess={handleUploadSuccess}
+        onError={handleUploadError}
         options={{
           sources: ["local"],
+          maxFileSize: 2097152,
         }}
       >
         {({ open }) => (
-          <button type="button" onClick={() => open?.()}>
+          <button type="button" onClick={() => open?.()} className="bg-white">
             Upload Image
           </button>
         )}
       </CldUploadWidget>
-      {imageUrl && (
-        <Image src={imageUrl} alt="Post's Image" width={150} height={150} />
-      )}
-      {publicId && (
-        <CldImage src={publicId} alt="Post Image" width={150} height={150} />
-      )}
+      {error && <p className="text-red-700">{error}</p>}
     </div>
   );
 };

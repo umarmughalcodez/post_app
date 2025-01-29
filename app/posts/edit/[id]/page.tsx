@@ -141,6 +141,19 @@ const EditPost = () => {
     return <p className="">Loading ...</p>;
   }
 
+  const handleUploadError = (error: unknown) => {
+    if (typeof error === "string" && error.includes("exceeds")) {
+      setError("Max image size is 2mb, please upload a smaller image");
+    } else if (error instanceof Error) {
+      setError(error.message);
+    } else {
+      setError("Please choose an image smaller tha 2mb");
+      setTimeout(() => {
+        setError("");
+      }, 2500);
+    }
+  };
+
   return (
     <div>
       <form className="text-black">
@@ -185,6 +198,11 @@ const EditPost = () => {
           onSuccess={(event: any) => {
             setPublicId(event?.info?.public_id);
             setNewImageUploaded(true);
+          }}
+          onError={handleUploadError}
+          options={{
+            sources: ["local"],
+            maxFileSize: 2097152,
           }}
         >
           {({ open }) => (

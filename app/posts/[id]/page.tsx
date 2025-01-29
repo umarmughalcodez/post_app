@@ -45,7 +45,9 @@ const Post = () => {
         const session = await getSession();
         const user = session?.user;
         if (!user) {
-          throw new Error("User not authenticated");
+          throw new Error(
+            `User not authenticated, Please verify yourself first`
+          );
         }
         setUserEmail(user.email as string);
 
@@ -69,7 +71,6 @@ const Post = () => {
             setError(null);
           }, 1500);
         }
-        throw new Error("Failed to fetch post");
       } finally {
         setLoading(false);
       }
@@ -135,8 +136,8 @@ const Post = () => {
 
   return (
     <div className="h-full w-full">
-      <p>Title: {post?.title}</p>
-      <p>Description: {post?.description}</p>
+      <p>{post?.title}</p>
+      <p>{post?.description}</p>
       <br />
       {post?.image_url && (
         <Image

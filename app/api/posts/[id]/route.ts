@@ -11,8 +11,6 @@ export const GET = async (
   context: { params: { id: string } }
 ) => {
   try {
-    const session = await auth();
-    const user = session?.user;
     const { id } = await context.params;
 
     const post = await prisma.posts.findUnique({

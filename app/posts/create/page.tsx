@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
 import { MdDelete } from "react-icons/md";
+import ImageUploader from "@/components/ImageUploader";
 
 const createPost = () => {
   const [title, setTitle] = useState<string>("");
@@ -85,7 +86,7 @@ const createPost = () => {
   };
 
   return (
-    <div>
+    <div className="text-black">
       <form onSubmit={handleSubmit}>
         <input
           placeholder="Enter title here..."
@@ -117,20 +118,24 @@ const createPost = () => {
           </>
         )}
 
-        <CldUploadWidget
+        {/* <CldUploadWidget
           uploadPreset="nextjs_posts"
           onSuccess={(event: any) => {
             setPublicId(event?.info?.public_id);
           }}
         >
           {({ open }) => (
-            <button type="button" onClick={() => open?.()}>
+            <button type="button" className="bg-white" onClick={() => open?.()}>
               Upload Image
             </button>
           )}
-        </CldUploadWidget>
+        </CldUploadWidget> */}
+        <ImageUploader
+          onUpload={(uploadedPublicId) => setPublicId(uploadedPublicId)}
+        />
+        <br />
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" className="bg-white" disabled={loading}>
           create post
         </button>
       </form>

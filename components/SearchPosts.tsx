@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Post {
   id: string;
@@ -15,9 +16,22 @@ const SearchPosts = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showNotFound, setShowNotFound] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalPosts, setTotalPosts] = useState<number>(0);
+  const [selectedLimit, setSelectedLimit] = useState<number>(1);
+  const router = useRouter();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPage(1);
+    fetchPosts(keyword, 1);
+  };
+
+  useEffect(() => {
+    fetchPosts(keyword, page);
+  }, [selectedLimit]);
+
+  const fetchPosts = async (searchKeyword: string, page: number) => {
     setError("");
     setShowNotFound(false);
     setLoading(true);
@@ -27,7 +41,11 @@ const SearchPosts = () => {
       const res = await fetch("/api/posts/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword }),
+        body: JSON.stringify({
+          keyword: searchKeyword,
+          page,
+          limit: selectedLimit,
+        }),
       });
 
       if (!res.ok) {
@@ -36,6 +54,7 @@ const SearchPosts = () => {
 
       const data = await res.json();
       setPosts(data.matchedPosts || []);
+      setTotalPosts(data.totalPosts || 0);
 
       const matchedPosts = Array.isArray(data.matchedPosts)
         ? data.matchedPosts
@@ -58,6 +77,26 @@ const SearchPosts = () => {
     }
   };
 
+  useEffect(() => {
+    fetchPosts("", 1);
+  }, []);
+
+  const handlePreviousPage = async () => {
+    setPage((prevPage) => {
+      const prevPageNumber = prevPage > 1 ? prevPage - 1 : 1;
+      fetchPosts(keyword, prevPageNumber);
+      return prevPageNumber;
+    });
+  };
+
+  const handleNextPage = () => {
+    setPage((prevPage) => {
+      const nextPage = prevPage + 1;
+      fetchPosts(keyword, nextPage);
+      return nextPage;
+    });
+  };
+
   return (
     <div className="w-64 h-32">
       <form onSubmit={handleSearch}>
@@ -67,13 +106,28 @@ const SearchPosts = () => {
           onChange={(e) => setKeyword(e.target.value)}
         />
         <button type="submit">Search</button>
+        <br />
+        <select
+          value={selectedLimit}
+          onChange={(e) => setSelectedLimit(Number(e.target.value))}
+        >
+          <option value={1}>1</option>
+          <option value={2}>2</option>
+          <option value={3}>3</option>
+        </select>
         {error && <p className="text-red-700">{error}</p>}
       </form>
       {loading && <p>Loading ...</p>}
       {posts.length > 0 ? (
         <ul>
           {posts.map((post) => (
-            <li key={post.id} className="border border-white rounded-xl">
+            <li
+              key={post.id}
+              className="border border-white rounded-xl cursor-pointer"
+              onClick={() => {
+                router.push(`/posts/${post.id}`);
+              }}
+            >
               <Image
                 src={post.image_url}
                 alt="Post's Image"
@@ -88,6 +142,19 @@ const SearchPosts = () => {
       ) : (
         showNotFound && <p>Posts Not Found</p>
       )}
+      <div className="pagination">
+        <button onClick={handlePreviousPage} disabled={page === 1}>
+          Previous
+        </button>
+        <br />
+        <br />
+        <button
+          onClick={handleNextPage}
+          disabled={page * selectedLimit >= totalPosts}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
