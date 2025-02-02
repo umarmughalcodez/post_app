@@ -58,12 +58,12 @@ const createPost = () => {
       }
 
       const post = await res.json();
-      const postId = post.data.id;
+      const postId = await post.data.id;
       setSuccess(true);
       setDescription("");
       setTitle("");
       setPublicId("");
-      router.push(`/posts/${postId}`);
+      await router.push(`/posts/${postId}`);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
