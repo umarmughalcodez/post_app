@@ -2,6 +2,8 @@
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 interface Post {
   id: string;
@@ -100,12 +102,12 @@ const SearchPosts = () => {
   return (
     <div className="w-64 h-32">
       <form onSubmit={handleSearch}>
-        <input
+        <Input
           placeholder="Search Posts..."
           value={keyword as string}
           onChange={(e) => setKeyword(e.target.value)}
         />
-        <button type="submit">Search</button>
+        <Button type="submit">Search</Button>
         <br />
         <select
           value={selectedLimit}
@@ -143,17 +145,17 @@ const SearchPosts = () => {
         showNotFound && <p>Posts Not Found</p>
       )}
       <div className="pagination">
-        <button onClick={handlePreviousPage} disabled={page === 1}>
+        <Button onClick={handlePreviousPage} disabled={page === 1}>
           Previous
-        </button>
+        </Button>
         <br />
         <br />
-        <button
+        <Button
           onClick={handleNextPage}
           disabled={page * selectedLimit >= totalPosts}
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

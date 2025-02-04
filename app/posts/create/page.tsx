@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
 import { MdDelete } from "react-icons/md";
 import ImageUploader from "@/components/ImageUploader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const createPost = () => {
   const [title, setTitle] = useState<string>("");
@@ -86,9 +88,14 @@ const createPost = () => {
   };
 
   return (
-    <div className="text-black">
-      <form onSubmit={handleSubmit}>
-        <input
+    <div className="text-black mt-24 grid place-items-center">
+      <form
+        onSubmit={handleSubmit}
+        className="w-[60%] p-5 shadow-2xl rounded-xl grid place-items-center"
+      >
+        <h1 className="text-2xl mb-4">Create Post</h1>
+        <Input
+          className="mt-3 rounded-lg"
           placeholder="Enter title here..."
           type="text"
           value={title}
@@ -97,47 +104,42 @@ const createPost = () => {
         />
         <br />
         <textarea
+          className="resize-none w-[95%] h-32 mb-1 mt-2 outline-1"
           placeholder="Enter description here..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
         <br />
-        <label>Image</label>
         {publicId && (
           <>
-            <button onClick={handleDeleteImage}>
-              {" "}
+            <Button
+              onClick={handleDeleteImage}
+              className="text-black left-[100%]"
+              // variant={"default"}
+            >
               <MdDelete />
-            </button>
+            </Button>
             <CldImage
               src={publicId}
               alt="Post's Image"
-              width={150}
-              height={150}
+              width={250}
+              height={250}
             />
           </>
         )}
-
-        {/* <CldUploadWidget
-          uploadPreset="nextjs_posts"
-          onSuccess={(event: any) => {
-            setPublicId(event?.info?.public_id);
-          }}
-        >
-          {({ open }) => (
-            <button type="button" className="bg-white" onClick={() => open?.()}>
-              Upload Image
-            </button>
-          )}
-        </CldUploadWidget> */}
         <ImageUploader
           onUpload={(uploadedPublicId) => setPublicId(uploadedPublicId)}
         />
         <br />
 
-        <button type="submit" className="bg-white" disabled={loading}>
+        <Button
+          variant={"default"}
+          type="submit"
+          // className="bg-white"
+          // disabled={loading}
+        >
           create post
-        </button>
+        </Button>
       </form>
 
       {error && <p className="text-red-700">{error}</p>}

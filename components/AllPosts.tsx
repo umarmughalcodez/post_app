@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Bounce, ToastContainer, toast } from "react-toastify";
+import { Button } from "./ui/button";
 
 interface Post {
   id: string;
@@ -12,10 +14,21 @@ interface Post {
 
 const AllPosts = () => {
   const router = useRouter();
+  const notify = () =>
+    toast.success("Link Copied!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: "dark",
+      transition: Bounce,
+    });
+
   const [posts, setPosts] = useState<Post[]>([]);
-  const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -32,12 +45,9 @@ const AllPosts = () => {
 
         const data = await res.json();
         setPosts(data.data || []);
-        setSuccess(true);
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message);
         } else {
-          setError("An unexpected error occured");
         }
       } finally {
         setLoading(false);
@@ -53,10 +63,24 @@ const AllPosts = () => {
   const handleCopyLink = async (postId: string) => {
     const url = `http://localhost:3000/posts/${postId}`;
     await navigator.clipboard.writeText(url);
+    notify();
   };
 
   return (
     <div className="m-3">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable={false}
+        pauseOnHover={false}
+        theme="dark"
+        transition={Bounce}
+      />
       {posts.length > 0 ? (
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {posts?.map((post) => (
@@ -79,7 +103,7 @@ const AllPosts = () => {
               <br />
               <p>{post.description}</p>
               <br />
-              <button onClick={() => handleCopyLink(post.id)}>Share</button>
+              <Button onClick={() => handleCopyLink(post.id)}>Share</Button>
             </li>
           ))}
         </ul>

@@ -35,9 +35,9 @@ const Navbar = ({ user }: NavbarProps) => {
         </Link>
       ) : (
         <Link
-          href="/signin"
+          href="/sign-in"
           className={`${
-            pathname === "/signin"
+            pathname === "/sign-in"
               ? "text-slate-400 hover:cursor-pointer"
               : "hover:text-slate-400 hover:cursor-pointer"
           }`}

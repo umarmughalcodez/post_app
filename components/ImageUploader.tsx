@@ -1,6 +1,7 @@
 "use client";
 import { CldUploadWidget } from "next-cloudinary";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 interface ImageUploaderProps {
   onUpload: (publicId: string) => void;
@@ -41,9 +42,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
         }}
       >
         {({ open }) => (
-          <button type="button" onClick={() => open?.()} className="bg-white">
+          <Button
+            // variant={"outline"}
+            onClick={() => open?.()}
+            className="bg-blue-400"
+          >
             Upload Image
-          </button>
+          </Button>
         )}
       </CldUploadWidget>
       {error && <p className="text-red-700">{error}</p>}

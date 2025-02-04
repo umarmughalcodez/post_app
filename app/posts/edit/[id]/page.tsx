@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import { MdDelete } from "react-icons/md";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Post {
   // data: {
@@ -157,7 +159,7 @@ const EditPost = () => {
   return (
     <div>
       <form className="text-black">
-        <input
+        <Input
           placeholder="Enter title here..."
           value={post?.title || ""}
           onChange={handleInputChange}
@@ -206,14 +208,14 @@ const EditPost = () => {
           }}
         >
           {({ open }) => (
-            <button type="button" onClick={() => open?.()}>
+            <Button variant={"secondary"} onClick={() => open?.()}>
               Update Image
-            </button>
+            </Button>
           )}
         </CldUploadWidget>
-        <button className="bg-white" type="submit" onClick={handleUpdate}>
+        <Button className="bg-white" type="submit" onClick={handleUpdate}>
           Update Post
-        </button>
+        </Button>
       </form>
       {error && <p className="text-red-700">{error}</p>}
       {success && <p className="text-green-600">{success}</p>}
