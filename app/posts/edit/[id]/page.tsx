@@ -1,12 +1,17 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { CldImage, CldUploadWidget } from "next-cloudinary";
+import {
+  CldImage,
+  CldUploadWidget,
+  CloudinaryUploadWidgetInfo,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import Image from "next/image";
-import { MdDelete } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Loader from "@/components/Loader";
 
 interface Post {
   // data: {
@@ -141,7 +146,7 @@ const EditPost = () => {
   };
 
   if (loading) {
-    return <p className="">Loading ...</p>;
+    return <Loader />;
   }
 
   const handleUploadError = (error: unknown) => {
@@ -154,6 +159,14 @@ const EditPost = () => {
       setTimeout(() => {
         setError("");
       }, 2500);
+    }
+  };
+
+  const handleUploadSucces = async (event: CloudinaryUploadWidgetResults) => {
+    if (event?.info && (event.info as CloudinaryUploadWidgetInfo).public_id) {
+      setPublicId((event.info as CloudinaryUploadWidgetInfo).public_id);
+      setNewImageUploaded(true);
+      // setPublicId(uploadedPublicId);
     }
   };
 
@@ -199,10 +212,11 @@ const EditPost = () => {
 
         <CldUploadWidget
           uploadPreset="nextjs_posts"
-          onSuccess={(event: any) => {
-            setPublicId(event?.info?.public_id);
-            setNewImageUploaded(true);
-          }}
+          // onSuccess={(event: CloudinaryUploadWidgetResults) => {
+          //   setPublicId(event?.info?.public_id);
+          //   setNewImageUploaded(true);
+          // }}
+          onSuccess={handleUploadSucces}
           onError={handleUploadError}
           options={{
             sources: ["local"],
@@ -211,6 +225,7 @@ const EditPost = () => {
         >
           {({ open }) => (
             <Button
+              type="button"
               className="bg-blue-400 hover:bg-opacity-85 mt-5 mb-5"
               onClick={() => open?.()}
             >

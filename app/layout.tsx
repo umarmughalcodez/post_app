@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { auth } from "@/auth";
+import { User } from "@/types/User";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -21,16 +22,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const user: any = session?.user;
+  const user: User | null = session?.user as User | null;
 
   return (
     <html lang="en">
       <body className={`${poppins.className} antialiased`}>
-        {/* <ThemeProvider attribute="class" defaultTheme="system"> */}
         <Navbar user={user} />
-
         {children}
-        {/* </ThemeProvider> */}
       </body>
     </html>
   );

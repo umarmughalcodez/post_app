@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Post from "./Post";
 import Loader from "@/components/Loader";
@@ -20,59 +20,108 @@ const SearchPosts = () => {
     fetchPosts(keyword, 1);
   };
 
+  // const fetchPosts = async (searchKeyword: string, page: number) => {
+  //   setError("");
+  //   setShowNotFound(false);
+  //   setLoading(true);
+  //   setPosts([]);
+
+  //   try {
+  //     const res = await fetch("/api/posts/search", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         keyword: searchKeyword,
+  //         page,
+  //         limit: selectedLimit,
+  //       }),
+  //     });
+
+  //     if (!res.ok) {
+  //       throw new Error("Failed to search posts");
+  //     }
+
+  //     const data = await res.json();
+  //     setPosts(data.matchedPosts || []);
+  //     setTotalPosts(data.totalPosts || 0);
+
+  //     const matchedPosts = Array.isArray(data.matchedPosts)
+  //       ? data.matchedPosts
+  //       : [];
+
+  //     if (matchedPosts.length === 0) {
+  //       setShowNotFound(true);
+  //       setTimeout(() => {
+  //         setShowNotFound(false);
+  //       }, 2500);
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       setError(error.message);
+  //     } else {
+  //       setError("An unknown error occurred");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchPosts = useCallback(
+    async (searchKeyword: string, page: number) => {
+      setError("");
+      setShowNotFound(false);
+      setLoading(true);
+      setPosts([]);
+
+      try {
+        const res = await fetch("/api/posts/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            keyword: searchKeyword,
+            page,
+            limit: selectedLimit,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to search posts");
+        }
+
+        const data = await res.json();
+        setPosts(data.matchedPosts || []);
+        setTotalPosts(data.totalPosts || 0);
+
+        const matchedPosts = Array.isArray(data.matchedPosts)
+          ? data.matchedPosts
+          : [];
+
+        if (matchedPosts.length === 0) {
+          setShowNotFound(true);
+          setTimeout(() => {
+            setShowNotFound(false);
+          }, 2500);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("An unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedLimit]
+  );
+
   useEffect(() => {
     fetchPosts(keyword, page);
-  }, [selectedLimit]);
-
-  const fetchPosts = async (searchKeyword: string, page: number) => {
-    setError("");
-    setShowNotFound(false);
-    setLoading(true);
-    setPosts([]);
-
-    try {
-      const res = await fetch("/api/posts/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          keyword: searchKeyword,
-          page,
-          limit: selectedLimit,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to search posts");
-      }
-
-      const data = await res.json();
-      setPosts(data.matchedPosts || []);
-      setTotalPosts(data.totalPosts || 0);
-
-      const matchedPosts = Array.isArray(data.matchedPosts)
-        ? data.matchedPosts
-        : [];
-
-      if (matchedPosts.length === 0) {
-        setShowNotFound(true);
-        setTimeout(() => {
-          setShowNotFound(false);
-        }, 2500);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An unknown error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedLimit, page, fetchPosts]);
 
   useEffect(() => {
     fetchPosts("", 1);
-  }, []);
+  }, [fetchPosts]);
 
   const handlePreviousPage = async () => {
     setPage((prevPage) => {

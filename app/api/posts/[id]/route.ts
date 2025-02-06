@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import prisma from "@/prisma/db.config";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -6,10 +5,19 @@ const createResponse = (status: number, message: string, data?: unknown) => {
   return NextResponse.json({ status, message, data });
 };
 
-export const GET = async (
-  req: NextRequest,
-  context: { params: { id: string } }
-) => {
+interface Context {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+interface DeleteContext {
+  params: {
+    id: string;
+  };
+}
+
+export const GET = async (req: NextRequest, context: Context) => {
   try {
     const { id } = await context.params;
 
@@ -31,10 +39,7 @@ export const GET = async (
   }
 };
 
-export const PUT = async (
-  req: NextRequest,
-  context: { params: { id: string } }
-) => {
+export const PUT = async (req: NextRequest, context: Context) => {
   const { id } = await context.params;
 
   const body = await req.json();
@@ -73,11 +78,10 @@ export const PUT = async (
   }
 };
 
-export const DELETE = async (
-  req: NextRequest,
-  context: { params: { id: string } }
-) => {
+export const DELETE = async (req: Request, context: Context) => {
   const { id } = await context.params;
+
+  console.log("ID is Delete func", id);
 
   const post = await prisma.posts.findUnique({
     where: {

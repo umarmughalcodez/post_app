@@ -13,7 +13,11 @@ interface Post {
   image_url: string;
 }
 
-const Post = (data: any) => {
+interface PostData {
+  data: Post[];
+}
+
+const Post = (data: PostData) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const router = useRouter();
 

@@ -29,7 +29,11 @@ export const GET = async (req: NextRequest) => {
       totalPosts,
     });
   } catch (error) {
-    return createResponse(400, "Failed to fetch posts");
+    return NextResponse.json({
+      status: 400,
+      message: "Failed to fetch posts",
+      error,
+    });
   }
 };
 
@@ -57,6 +61,10 @@ export const POST = async (req: NextRequest) => {
 
     return createResponse(201, "Post created successfully", post);
   } catch (error) {
-    return createResponse(400, "Failed to fetch posts");
+    return NextResponse.json({
+      status: 400,
+      message: "Failed to fetch posts",
+      error,
+    });
   }
 };

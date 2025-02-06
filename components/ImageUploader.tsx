@@ -1,5 +1,9 @@
 "use client";
-import { CldUploadWidget } from "next-cloudinary";
+import {
+  CldUploadWidget,
+  CloudinaryUploadWidgetInfo,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
@@ -10,11 +14,24 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
   const [error, setError] = useState<string>("");
 
-  const handleUploadSuccess = async (event: any) => {
-    setError("");
-    const uploadedPublicId = event.info.public_id;
+  // const handleUploadSuccess = async (event: any) => {
+  //   setError("");
+  //   const uploadedPublicId = event.info.public_id;
 
-    onUpload(uploadedPublicId);
+  //   onUpload(uploadedPublicId);
+  // };
+
+  const handleUploadSuccess = async (event: CloudinaryUploadWidgetResults) => {
+    setError("");
+
+    // Check if event.info is of type CloudinaryUploadWidgetInfo
+    if (event?.info && (event.info as CloudinaryUploadWidgetInfo).public_id) {
+      const uploadedPublicId = (event.info as CloudinaryUploadWidgetInfo)
+        .public_id;
+      onUpload(uploadedPublicId);
+    } else {
+      setError("There was an issue with the image upload.");
+    }
   };
 
   const handleUploadError = (error: unknown) => {
@@ -34,6 +51,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
       <p className="text-white">Upload an Image</p>
       <CldUploadWidget
         uploadPreset="nextjs_posts"
+        // onSuccess={(event: CloudinaryUploadWidgetResults) => {
+        //   setError("");
+        //   const uploadedPublicId = event?.info?.public_id;
+
+        //   onUpload(uploadedPublicId);
+        // }}
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
         options={{

@@ -28,12 +28,12 @@ const Post = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  let user;
-
   useEffect(() => {
     setError(null);
 
     const fetchPost = async () => {
+      let user = null;
+
       try {
         setLoading(true);
         if (!postId || typeof postId !== "string") {
@@ -53,7 +53,6 @@ const Post = () => {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-
 
         const data = await res.json();
         setPost(data.data);
@@ -90,14 +89,21 @@ const Post = () => {
 
       setDeletionSuccess(true);
       setTimeout(() => {
-        router.push("/");
+        router.push("/profile");
       }, 1500);
-    } catch (error) {}
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        setTimeout(() => {
+          setError(null);
+        }, 2500);
+      }
+    }
   };
 
   if (deletionSuccess) {
     return (
-      <div className="w-full grid place-items-center">
+      <div className="w-full grid place-items-center h-full">
         <p className="text-lg text-red-600">Post deleted successfully</p>
       </div>
     );

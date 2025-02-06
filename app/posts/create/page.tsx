@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CldImage, CldUploadWidget } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
 import { MdDelete } from "react-icons/md";
 import ImageUploader from "@/components/ImageUploader";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,13 @@ import { Input } from "@/components/ui/input";
 import Loader from "@/components/Loader";
 import { Textarea } from "@/components/ui/textarea";
 
-const createPost = () => {
+const CreatePost = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [publicId, setPublicId] = useState("");
-
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,4 +158,4 @@ const createPost = () => {
   );
 };
 
-export default createPost;
+export default CreatePost;

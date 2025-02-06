@@ -23,6 +23,10 @@ export const GET = async () => {
       posts,
     });
   } catch (error) {
-    return NextResponse.json({ message: "Failed to fetch posts", status: 400 });
+    return NextResponse.json({
+      status: 400,
+      message: "Failed to fetch posts",
+      error,
+    });
   }
 };

@@ -7,7 +7,7 @@ interface NavbarProps {
   user: User | null;
 }
 
-const Navbar = ({ user }: NavbarProps) => {
+const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const pathname = usePathname();
 
   return (
@@ -16,7 +16,7 @@ const Navbar = ({ user }: NavbarProps) => {
         href="/"
         className={`${
           pathname === "/"
-            ? "text-slate-400 hover:cursor-pointer underline underline-offset-4"
+            ? "text-slate-400 hover:cursor-pointer"
             : "hover:text-slate-400 hover:cursor-pointer"
         }`}
       >
