@@ -1,6 +1,6 @@
 import prisma from "@/prisma/db.config";
 import { auth } from "@/auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
@@ -8,20 +8,11 @@ interface Context {
   }>;
 }
 
-export const GET = async (request: NextRequest) => {
+export const GET = async (context: Context) => {
   const session = await auth();
   const user = session?.user;
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-
-    if (!id) {
-      return NextResponse.json({
-        message: "Invalid post Id",
-        status: 400,
-      });
-    }
-
+    const { id } = await context.params;
     const post = prisma.posts.findUnique({
       where: {
         id: String(id),
