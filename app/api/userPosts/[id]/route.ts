@@ -1,12 +1,27 @@
 import prisma from "@/prisma/db.config";
 import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (context: { params: { id: string } }) => {
+interface Context {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export const GET = async (request: NextRequest) => {
   const session = await auth();
   const user = session?.user;
   try {
-    const { id } = await context.params;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({
+        message: "Invalid post Id",
+        status: 400,
+      });
+    }
+
     const post = prisma.posts.findUnique({
       where: {
         id: String(id),
