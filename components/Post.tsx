@@ -3,6 +3,8 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "./Loader";
+import { Button } from "./ui/button";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Post {
   id: string;
@@ -23,9 +25,22 @@ const Post = (data: any) => {
     return <Loader />;
   }
 
+  const notify = () =>
+    toast("Link Copied!", {
+      duration: 2000,
+      icon: "✅",
+    });
+
+  const handleCopyLink = async (postId: string) => {
+    const url = `http://localhost:3000/posts/${postId}`;
+    await navigator.clipboard.writeText(url);
+  };
+
   return (
     <div>
-      <ul>
+      <Toaster />
+
+      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {posts?.length > 0 ? (
           posts?.map((post) => (
             <li
@@ -38,10 +53,18 @@ const Post = (data: any) => {
                 width={250}
                 height={250}
                 onClick={() => router.push(`/posts/${post.id}`)}
-                className="cursor-pointer mt-1"
+                className="cursor-pointer mt-1 mb-2"
               />
               <p>{post.title}</p>
-              <p>{post.description}</p>
+              <p className="w-[70%] truncate">{post.description}</p>
+              <Button
+                onClick={() => {
+                  handleCopyLink(post.id);
+                  notify();
+                }}
+              >
+                Share
+              </Button>
             </li>
           ))
         ) : (

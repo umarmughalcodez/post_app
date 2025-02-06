@@ -50,7 +50,7 @@ const FetchUserPosts = () => {
 
   return (
     <ul className="flex space-x-5 m-10">
-      <ToastContainer
+      {/* <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar
@@ -62,7 +62,7 @@ const FetchUserPosts = () => {
         pauseOnHover={false}
         theme="dark"
         transition={Bounce}
-      />
+      /> */}
       {posts.length > 0 ? <Post data={posts} /> : <div>No posts available</div>}
     </ul>
   );

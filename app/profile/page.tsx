@@ -1,5 +1,5 @@
 import React from "react";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import Image from "next/image";
 import Link from "next/link";
 import FetchUserPosts from "@/components/FetchUserPosts";
@@ -9,10 +9,10 @@ const profile = async () => {
   const user = session?.user;
 
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full flex-col items-center justify-center h-full">
       {user ? (
-        <div className="">
-          <div className="border border-black p-5 rounded-xl grid place-items-center">
+        <div className="w-full h-full grid place-items-center">
+          <div className="grid place-items-center border border-black mt-5 rounded-xl py-12 px-24">
             <Image
               src={user?.image as string}
               alt="User's Image"
@@ -21,26 +21,24 @@ const profile = async () => {
               className="rounded-full"
             />
             <p className="mt-2">{user?.name}</p>
-            {/* <br /> */}
             <p className="mt-2 mb-2">{user?.email}</p>
-            {/* <br /> */}
             <Link
               className="bg-red-500 rounded-xl py-1 px-2 text-white cursor-pointer"
               href={"/sign-out"}
             >
               Sign Out
             </Link>
-          </div>
-          <div className="mt-5">
             <Link
-              className="bg-black rounded-xl py-1 px-2 text-white cursor-pointer"
+              className="bg-black mt-4 rounded-xl py-1 px-2 text-white cursor-pointer"
               href={"/posts/create"}
             >
               Create Post
             </Link>
           </div>
 
-          <FetchUserPosts />
+          <div>
+            <FetchUserPosts />
+          </div>
         </div>
       ) : (
         <>

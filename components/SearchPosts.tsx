@@ -1,16 +1,8 @@
 "use client";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-
-interface Post {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string;
-}
+import Post from "./Post";
+import Loader from "@/components/Loader";
 
 const SearchPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -20,8 +12,7 @@ const SearchPosts = () => {
   const [showNotFound, setShowNotFound] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [totalPosts, setTotalPosts] = useState<number>(0);
-  const [selectedLimit, setSelectedLimit] = useState<number>(1);
-  const router = useRouter();
+  const [selectedLimit, setSelectedLimit] = useState<number>(2);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,57 +90,52 @@ const SearchPosts = () => {
     });
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <div className="w-64 h-32">
-      <form onSubmit={handleSearch}>
-        <Input
-          placeholder="Search Posts..."
-          value={keyword as string}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
-        <Button type="submit">Search</Button>
-        <br />
+    <div className="w-full grid place-items-center mt-12">
+      <form onSubmit={handleSearch} className="grid place-items-center">
+        <div className="inline-block">
+          <input
+            placeholder="Search Posts..."
+            value={keyword as string}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="mb-10 outline-1 border-gray-600 border px-4 py-1 rounded-full outline-none mx-3"
+          />
+          <button
+            type="submit"
+            className="bg-blue-400 px-2 py-1 rounded-full text-white"
+          >
+            Search
+          </button>
+        </div>
+
+        {error && <p className="text-red-700">{error}</p>}
+      </form>
+      {posts.length > 0 ? (
+        <div className="w-full grid place-items-center">
+          <Post data={posts} />
+        </div>
+      ) : (
+        showNotFound && <p>Posts Not Found</p>
+      )}
+      <div className="pagination mt-5 mb-5">
+        <Button onClick={handlePreviousPage} disabled={page === 1}>
+          Previous
+        </Button>
         <select
+          className="mx-5 bg-green-300 rounded-xl px-2 outline-none hover:bg-gray-300"
           value={selectedLimit}
           onChange={(e) => setSelectedLimit(Number(e.target.value))}
         >
           <option value={1}>1</option>
           <option value={2}>2</option>
           <option value={3}>3</option>
+          <option value={4}>4</option>
         </select>
-        {error && <p className="text-red-700">{error}</p>}
-      </form>
-      {loading && <p>Loading ...</p>}
-      {posts.length > 0 ? (
-        <ul>
-          {posts.map((post) => (
-            <li
-              key={post.id}
-              className="border border-white rounded-xl cursor-pointer"
-              onClick={() => {
-                router.push(`/posts/${post.id}`);
-              }}
-            >
-              <Image
-                src={post.image_url}
-                alt="Post's Image"
-                width={150}
-                height={150}
-              />
-              <p>Title: {post.title}</p>
-              <p>Description: {post.description}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        showNotFound && <p>Posts Not Found</p>
-      )}
-      <div className="pagination">
-        <Button onClick={handlePreviousPage} disabled={page === 1}>
-          Previous
-        </Button>
-        <br />
-        <br />
+
         <Button
           onClick={handleNextPage}
           disabled={page * selectedLimit >= totalPosts}

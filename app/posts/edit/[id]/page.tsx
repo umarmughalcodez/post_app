@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MdDelete } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Post {
   // data: {
@@ -157,8 +158,8 @@ const EditPost = () => {
   };
 
   return (
-    <div>
-      <form className="text-black">
+    <div className="w-full geid place-items-center mt-24">
+      <form className="text-black border-black border p-5 w-[50%] grid place-items-center">
         <Input
           placeholder="Enter title here..."
           value={post?.title || ""}
@@ -167,11 +168,12 @@ const EditPost = () => {
           name="title"
         />
         <br />
-        <textarea
+        <Textarea
           name="description"
           value={post?.description || ""}
           onChange={handleInputChange}
           placeholder="Enter description here..."
+          className="resize-none w-[95%] h-32 mb-1 mt-2 outline-1 p-3 outline-gray-600"
         />
         <br />
         {!newImageUploaded && post?.image_url && (
@@ -179,8 +181,8 @@ const EditPost = () => {
             <Image
               src={post?.image_url as string}
               alt="Post's Image"
-              width={150}
-              height={150}
+              width={200}
+              height={200}
             />
           </>
         )}
@@ -208,12 +210,15 @@ const EditPost = () => {
           }}
         >
           {({ open }) => (
-            <Button variant={"secondary"} onClick={() => open?.()}>
+            <Button
+              className="bg-blue-400 hover:bg-opacity-85 mt-5 mb-5"
+              onClick={() => open?.()}
+            >
               Update Image
             </Button>
           )}
         </CldUploadWidget>
-        <Button className="bg-white" type="submit" onClick={handleUpdate}>
+        <Button type="submit" onClick={handleUpdate}>
           Update Post
         </Button>
       </form>

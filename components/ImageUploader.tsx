@@ -43,9 +43,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
       >
         {({ open }) => (
           <Button
-            // variant={"outline"}
             onClick={() => open?.()}
-            className="bg-blue-400"
+            className="bg-blue-400 hover:bg-opacity-80"
           >
             Upload Image
           </Button>

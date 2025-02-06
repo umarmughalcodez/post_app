@@ -1,115 +1,103 @@
 "use client";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { Bounce, ToastContainer, toast } from "react-toastify";
+import React, { useState, useEffect } from "react";
+import Post from "./Post";
+import Loader from "@/components/Loader";
 import { Button } from "./ui/button";
 
-interface Post {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string;
-}
-
 const AllPosts = () => {
-  const router = useRouter();
-  const notify = () =>
-    toast.success("Link Copied!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      theme: "dark",
-      transition: Bounce,
-    });
-
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(4);
+  const [totalPosts, setTotalPosts] = useState<number>(0);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/posts", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+  const fetchPosts = async (page: number, limit: number) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/posts?page=${page}&limit=${limit}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch posts");
-        }
-
-        const data = await res.json();
-        setPosts(data.data || []);
-      } catch (error) {
-        if (error instanceof Error) {
-        } else {
-        }
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error("Failed to fetch posts");
       }
-    };
-    fetchPosts();
-  }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const handleCopyLink = async (postId: string) => {
-    const url = `http://localhost:3000/posts/${postId}`;
-    await navigator.clipboard.writeText(url);
-    notify();
+      const data = await res.json();
+      setPosts(data.data.posts || []);
+      setTotalPosts(data.data.totalPosts || 0);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchPosts(page, limit);
+  }, [page, limit]);
+
+  const totalPages = Math.ceil(totalPosts / limit);
+
+  const handleNextPage = () =>
+    setPage((prevPage) => Math.min(prevPage + 1, totalPages));
+  const handlePreviousPage = () =>
+    setPage((prevPage) => Math.max(prevPage - 1, 1));
+  const handleFirstPage = () => setPage(1);
+  const handleLastPage = () => setPage(totalPages);
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <div className="m-3">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable={false}
-        pauseOnHover={false}
-        theme="dark"
-        transition={Bounce}
-      />
-      {posts.length > 0 ? (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {posts?.map((post) => (
-            <li
-              key={post.id}
-              className="border border-white w-60 p-2 rounded-xl 
-             hover:bg-slate-900 transition-all delay-150 grid place-items-center"
+    <div className="m-3 grid place-items-center">
+      <Post data={posts} />
+      <div className="pagination-controls mt-4">
+        <Button
+          onClick={handleFirstPage}
+          disabled={page === 1}
+          className="mr-2"
+        >
+          First
+        </Button>
+        <Button
+          onClick={handlePreviousPage}
+          disabled={page === 1}
+          className="mr-2"
+        >
+          Previous
+        </Button>
+        <select
+          value={limit}
+          onChange={(e) => setLimit(Number(e.target.value))}
+          className="bg-blue-300 mx-2 rounded-full px-1 outline-none"
+        >
+          {[1, 2, 3, 4, 5, 6].map((num) => (
+            <option
+              key={num}
+              value={num}
+              className="bg-gray-300 hover:bg-stone-500"
             >
-              <Image
-                src={post.image_url}
-                alt="Post's Image"
-                width={150}
-                height={150}
-                className="cursor-pointer"
-                onClick={() => {
-                  router.push(`/posts/${post.id}`);
-                }}
-              />
-              <p>{post.title}</p>
-              <br />
-              <p>{post.description}</p>
-              <br />
-              <Button onClick={() => handleCopyLink(post.id)}>Share</Button>
-            </li>
+              {num}
+            </option>
           ))}
-        </ul>
-      ) : (
-        <div>No posts available</div>
-      )}
+        </select>
+        <Button
+          onClick={handleNextPage}
+          disabled={page === totalPages}
+          className="mr-2"
+        >
+          Next
+        </Button>
+        <Button
+          onClick={handleLastPage}
+          disabled={page === totalPages}
+          className="mr-2"
+        >
+          Last
+        </Button>
+      </div>
     </div>
   );
 };

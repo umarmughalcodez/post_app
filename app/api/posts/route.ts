@@ -8,9 +8,26 @@ const createResponse = (status: number, message: string, data?: unknown) => {
 
 export const GET = async (req: NextRequest) => {
   try {
-    const posts = await prisma.posts.findMany({});
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = Math.min(
+      Math.max(parseInt(searchParams.get("limit") || "3", 10), 1),
+      6
+    );
 
-    return createResponse(200, "Posts fetched successfully", posts);
+    const skip = (page - 1) * limit;
+
+    const posts = await prisma.posts.findMany({
+      skip,
+      take: limit,
+    });
+
+    const totalPosts = await prisma.posts.count();
+
+    return createResponse(200, "Posts fetched successfully", {
+      posts,
+      totalPosts,
+    });
   } catch (error) {
     return createResponse(400, "Failed to fetch posts");
   }

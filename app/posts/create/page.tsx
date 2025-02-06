@@ -6,6 +6,8 @@ import { MdDelete } from "react-icons/md";
 import ImageUploader from "@/components/ImageUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Loader from "@/components/Loader";
+import { Textarea } from "@/components/ui/textarea";
 
 const createPost = () => {
   const [title, setTitle] = useState<string>("");
@@ -73,7 +75,7 @@ const createPost = () => {
           setError(null);
         }, 2500);
       } else {
-        setError("An unexpected error occured");
+        setError("Image size should not exceed 2 mb");
         setTimeout(() => {
           setError(null);
         }, 2500);
@@ -86,6 +88,10 @@ const createPost = () => {
   const handleDeleteImage = async () => {
     setPublicId("");
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="text-black mt-24 grid place-items-center">
@@ -101,23 +107,25 @@ const createPost = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          max={50}
         />
         <br />
-        <textarea
-          className="resize-none w-[95%] h-32 mb-1 mt-2 outline-1"
+        <Textarea
+          className="resize-none w-[95%] h-32 mb-1 mt-2 outline-1 p-3"
           placeholder="Enter description here..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          maxLength={700}
         />
         <br />
         {publicId && (
           <>
             <Button
               onClick={handleDeleteImage}
-              className="text-black left-[100%]"
+              className="left-[100%] bg-none mb-3"
               // variant={"default"}
             >
-              <MdDelete />
+              <MdDelete className="bg-none" />
             </Button>
             <CldImage
               src={publicId}
@@ -140,11 +148,13 @@ const createPost = () => {
         >
           create post
         </Button>
+        {success && (
+          <p className="text-green-600 mt-3 text-lg">
+            Post created successfully!
+          </p>
+        )}
+        {error && <p className="text-red-700">{error}</p>}
       </form>
-
-      {error && <p className="text-red-700">{error}</p>}
-      {success && <p className="text-green-600">Post created successfully</p>}
-      {loading && <div>Loading ...</div>}
     </div>
   );
 };

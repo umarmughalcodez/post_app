@@ -16,7 +16,7 @@ const Navbar = ({ user }: NavbarProps) => {
         href="/"
         className={`${
           pathname === "/"
-            ? "text-slate-400 hover:cursor-pointer"
+            ? "text-slate-400 hover:cursor-pointer underline underline-offset-4"
             : "hover:text-slate-400 hover:cursor-pointer"
         }`}
       >
@@ -27,8 +27,8 @@ const Navbar = ({ user }: NavbarProps) => {
           href="/profile"
           className={`${
             pathname === "/profile"
-              ? "text-slate-400 hover:cursor-pointer"
-              : "hover:text-slate-400 hover:cursor-pointer"
+              ? "text-slate-400 hover:cursor-pointer text-lg"
+              : "hover:text-slate-400 hover:cursor-pointer text-lg"
           }`}
         >
           Profile
@@ -38,8 +38,8 @@ const Navbar = ({ user }: NavbarProps) => {
           href="/sign-in"
           className={`${
             pathname === "/sign-in"
-              ? "text-slate-400 hover:cursor-pointer"
-              : "hover:text-slate-400 hover:cursor-pointer"
+              ? "text-slate-400 hover:cursor-pointer text-lg"
+              : "hover:text-slate-400 hover:cursor-pointer text-lg"
           }`}
         >
           Sign In
@@ -49,8 +49,8 @@ const Navbar = ({ user }: NavbarProps) => {
         href="/posts/search"
         className={`${
           pathname === "/posts/search"
-            ? "text-slate-400 hover:cursor-pointer"
-            : "hover:text-slate-400 hover:cursor-pointer"
+            ? "text-slate-400 hover:cursor-pointer text-lg"
+            : "hover:text-slate-400 hover:cursor-pointer text-lg"
         }`}
       >
         Search

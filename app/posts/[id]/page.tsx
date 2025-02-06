@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { IoCloseSharp } from "react-icons/io5";
 import Image from "next/image";
-// import { auth } from "@/auth";
+import Loader from "@/components/Loader";
 import { getSession } from "next-auth/react";
-import { Bounce, toast, ToastContainer } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Post {
   id: string;
@@ -14,12 +14,6 @@ interface Post {
   description: string;
   image_url: string;
   userEmail: string;
-}
-
-interface Session {
-  user: {
-    email: string;
-  };
 }
 
 const Post = () => {
@@ -34,6 +28,8 @@ const Post = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  let user;
+
   useEffect(() => {
     setError(null);
 
@@ -45,10 +41,10 @@ const Post = () => {
         }
 
         const session = await getSession();
-        const user = session?.user;
+        user = session?.user;
         if (!user) {
           throw new Error(
-            `User not authenticated, Please verify yourself first`
+            "You are not authenticated, Please verify Yourself first!"
           );
         }
         setUserEmail(user.email as string);
@@ -58,9 +54,6 @@ const Post = () => {
           headers: { "Content-Type": "application/json" },
         });
 
-        // if (!res.ok) {
-        //   throw new Error("Failed to fetch post");
-        // }
 
         const data = await res.json();
         setPost(data.data);
@@ -102,33 +95,37 @@ const Post = () => {
     } catch (error) {}
   };
 
-  // if (userEmail !== post?.userEmail) {
-  //   return <p>You are not the author of this post</p>;
-  // }
-
   if (deletionSuccess) {
-    return <div>Post deleted successfully</div>;
+    return (
+      <div className="w-full grid place-items-center">
+        <p className="text-lg text-red-600">Post deleted successfully</p>
+      </div>
+    );
   }
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <Loader />;
   }
 
   if (isFormOpen) {
     return (
       <div className="relative top-72">
-        <div className="absolute bg-gray-600 w-[30%] flex-col flex h-44 space-y-5 items-center justify-center top-[40%] left-[40%]">
-          <Button
-            className=" text-white absolute top-2 right-2"
+        <div className="absolute w-[50%] h-48 left-[30%] p-5 grid place-items-center rounded-xl shadow-2xl">
+          <button
+            className=" text-black absolute top-2 right-2 bg-none text-2xl hover:rotate-180 delay-100 transition-all"
             onClick={() => {
               setFormOpen(false);
             }}
           >
             <IoCloseSharp />
-          </Button>
+          </button>
           Do you really want to delete this post?
           <br />
-          <Button onClick={deletePost} className="bg-red-700">
+          <Button
+            variant={"destructive"}
+            onClick={deletePost}
+            className="bg-red-700"
+          >
             Delete
           </Button>
         </div>
@@ -137,71 +134,66 @@ const Post = () => {
   }
 
   const notify = () =>
-    toast.success("Link Copied!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      theme: "dark",
-      transition: Bounce,
+    toast("Link Copied!", {
+      duration: 2000,
+      icon: "✅",
     });
 
   const handleCopyLink = async (postId: string) => {
     const url = `http://localhost:3000/posts/${postId}`;
     await navigator.clipboard.writeText(url);
     notify();
+    //
   };
 
   return (
-    <div className="h-full w-full">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable={false}
-        pauseOnHover={false}
-        theme="dark"
-        transition={Bounce}
-      />
-      <p>{post?.title}</p>
-      <p>{post?.description}</p>
-      <br />
-      {post?.image_url && (
-        <Image
-          src={post?.image_url as string}
-          alt="Post's Image"
-          width={150}
-          height={150}
-        />
-      )}
-      <Button onClick={() => handleCopyLink(post?.id as string)}>Share</Button>
+    <div className="h-full w-full grid place-items-center overflow-y-auto overflow-x-hidden">
+      <Toaster />
+      <div className="grid place-items-center mt-14">
+        {post?.image_url && (
+          <Image
+            src={post?.image_url as string}
+            alt="Post's Image"
+            width={300}
+            height={350}
+          />
+        )}
 
-      {userEmail === post?.userEmail && (
-        <>
-          <Button
-            onClick={() => {
-              router.push(`/posts/edit/${post.id}`);
-            }}
-          >
-            Update Post
-          </Button>
-          <br />
-          <Button
-            onClick={() => {
-              setFormOpen(true);
-            }}
-          >
-            Delete Post
-          </Button>
-        </>
-      )}
+        <p className="mt-3 mb-3">
+          <b>Title:</b> {post?.title}
+        </p>
+        <b>Descrption:</b>
+        <p className="w-[30%] break-words">{post?.description}</p>
+        <Button
+          onClick={() => {
+            handleCopyLink(post?.id as string);
+          }}
+          className="bg-green-600 hover:bg-opacity-85 mt-4 mb-3"
+        >
+          Share
+        </Button>
+
+        {userEmail === post?.userEmail && (
+          <>
+            <Button
+              className="bg-blue-400 hover:bg-opacity-85 mb-3"
+              onClick={() => {
+                router.push(`/posts/edit/${post.id}`);
+              }}
+            >
+              Update Post
+            </Button>
+            <Button
+              variant={"destructive"}
+              onClick={() => {
+                setFormOpen(true);
+              }}
+            >
+              Delete Post
+            </Button>
+          </>
+        )}
+      </div>
 
       {error && <div className="text-red-700">{error}</div>}
     </div>
