@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { auth } from "@/auth";
-import { Toast, ToastProvider } from "@/components/ui/toast";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -12,8 +11,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Next App",
-  description: "...",
+  title: "Simple Next App",
+  description: "......",
 };
 
 export default async function RootLayout({
@@ -30,10 +29,7 @@ export default async function RootLayout({
         {/* <ThemeProvider attribute="class" defaultTheme="system"> */}
         <Navbar user={user} />
 
-        <ToastProvider>
-          {children}
-          <Toast />
-        </ToastProvider>
+        {children}
         {/* </ThemeProvider> */}
       </body>
     </html>
