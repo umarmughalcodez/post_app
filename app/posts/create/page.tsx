@@ -60,11 +60,13 @@ const CreatePost = () => {
         throw new Error("Failed to create post");
       }
 
+      const post = await res.json();
+      const postId = await post.data.id;
       setSuccess(true);
       setDescription("");
       setTitle("");
       setPublicId("");
-      await router.push(`/profile`);
+      await router.push(`/posts/${postId}`);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
