@@ -11,12 +11,6 @@ interface Context {
   }>;
 }
 
-interface DeleteContext {
-  params: {
-    id: string;
-  };
-}
-
 export const GET = async (req: NextRequest, context: Context) => {
   try {
     const { id } = await context.params;
