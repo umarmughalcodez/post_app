@@ -20,6 +20,9 @@ export const GET = async (req: NextRequest) => {
     const posts = await prisma.posts.findMany({
       skip,
       take: limit,
+      orderBy: {
+        created_at: "desc"
+      }
     });
 
     const totalPosts = await prisma.posts.count();

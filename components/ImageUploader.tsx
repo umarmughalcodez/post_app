@@ -62,10 +62,26 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
         options={{
           sources: ["local"],
           maxFileSize: 2097152,
+          styles: {
+            palette: {
+              window: "#222", // Background color
+              windowBorder: "#222", // Border color
+              sourceBg: "#333",
+              buttonPrimary: "#ffffff", // Button color
+              button: "#ffffff",
+              link: "#ffffff",
+              menuIcons: "#ffffff",
+              text: "#ffffff",
+              primaryText: "#ffffff",
+              textPrimary: "#ffffff"
+
+            },
+          },
         }}
       >
         {({ open }) => (
           <Button
+          type="button"
             onClick={() => open?.()}
             className="bg-blue-400 hover:bg-opacity-80"
           >

@@ -1,4 +1,4 @@
-import AllPosts from "@/components/AllPosts";
+import AllPosts from "@/components/Post/AllPosts";
 
 export default function App() {
   return (

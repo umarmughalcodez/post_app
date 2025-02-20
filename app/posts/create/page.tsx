@@ -96,11 +96,11 @@ const CreatePost = () => {
     <div className="text-black mt-24 grid place-items-center">
       <form
         onSubmit={handleSubmit}
-        className="w-[60%] p-5 shadow-2xl rounded-xl grid place-items-center"
+        className="w-[50%] p-5 shadow-2xl rounded-xl grid place-items-center"
       >
         <h1 className="text-2xl mb-4">Create Post</h1>
         <Input
-          className="mt-3 rounded-lg"
+          className="mt-3 rounded-lg w-[85%]"
           placeholder="Enter title here..."
           type="text"
           value={title}
@@ -109,8 +109,9 @@ const CreatePost = () => {
           max={50}
         />
         <br />
+        {/* <SlateEditor value={description} onChange={setDescription} /> */}
         <Textarea
-          className="resize-none w-[95%] h-32 mb-1 mt-2 outline-1 p-3"
+          className="resize-none w-[85%] h-32 mb-1 mt-2 outline-1 p-3"
           placeholder="Enter description here..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -139,6 +140,7 @@ const CreatePost = () => {
         />
         <br />
 
+        {error && <p className="text-red-700">{error}</p>}
         <Button
           variant={"default"}
           type="submit"
@@ -152,7 +154,6 @@ const CreatePost = () => {
             Post created successfully!
           </p>
         )}
-        {error && <p className="text-red-700">{error}</p>}
       </form>
     </div>
   );

@@ -15,6 +15,9 @@ export const GET = async () => {
       where: {
         userEmail: user?.email as string,
       },
+      orderBy: {
+        created_at: "desc"
+      }
     });
 
     return NextResponse.json({

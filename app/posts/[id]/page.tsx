@@ -7,6 +7,7 @@ import Loader from "@/components/Loader";
 import { getSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
+import FetchAuthorDetails from "@/components/User/FetchAuthorDetails";
 
 interface Post {
   id: string;
@@ -156,6 +157,11 @@ const Post = () => {
     <div className="h-full w-full grid place-items-center overflow-y-auto overflow-x-hidden">
       <Toaster />
       <div className="grid place-items-center mt-14">
+        {/* {User Details} */}
+        <div>
+          <FetchAuthorDetails userData={post?.userEmail} />
+        </div>
+
         {post?.image_url && (
           <Image
             src={post?.image_url as string}
@@ -169,7 +175,7 @@ const Post = () => {
           <b>Title:</b> {post?.title}
         </p>
         <b>Descrption:</b>
-        <p className="w-[30%] break-words">{post?.description}</p>
+        <p className="w-[70%] break-words">{post?.description}</p>
         <Button
           onClick={() => {
             handleCopyLink(post?.id as string);

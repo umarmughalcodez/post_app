@@ -12,8 +12,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Simple Next App",
-  description: "......",
+  title: "Xenso",
+  description: "Simple App going to be ...",
 };
 
 export default async function RootLayout({
@@ -26,6 +26,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.svg" />
+      </head>
       <body className={`${poppins.className} antialiased`}>
         <Navbar user={user} />
         {children}
