@@ -6,6 +6,8 @@ import Image from "next/image";
 import { MdOutlineEdit } from "react-icons/md";
 import Link from "next/link";
 import FetchUserPosts from "@/components/Post/FetchUserPosts";
+import { MdVerified } from "react-icons/md";
+import { LuCrown } from "react-icons/lu";
 
 const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -37,20 +39,33 @@ const ProfilePage = () => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative ">
       <div className="w-full h-full grid place-items-center ">
-        {/* <div className="profile-card space-y-3 grid place-items-center border border-black mt-5 rounded-xl py-12 px-24 relative"> */}
         <div
           className="space-y-3 grid place-items-center mt-5 rounded-xl py-12 px-24 relative text-white"
           style={{
             backgroundImage:
-              "url('https://nodes.upnetwork.xyz/points/img/gif/ani-bg-03b.gif')",
+              "url('https://res.cloudinary.com/xcorpion/image/upload/v1740344288/lukxsq8cvmn4wdbtuveg.gif')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             opacity: 4,
           }}
         >
+          {user?.premiumAccountHolder ? null : (
+            <Link
+              href={"/upgrade"}
+              className="absolute top-5 left-5 mt-3 rounded-3xl transition-all delay-75 hover:text-yellow-300"
+            >
+              <div className="flex text-sm space-x-1">
+                Upgrade to Pro{" "}
+                <span className="text-xl ml-1">
+                  <LuCrown />
+                </span>
+              </div>
+            </Link>
+          )}
+
           <Link
             href={`/user/settings`}
-            className="absolute top-5 right-5 text-2xl rounded-3xl transition-all delay-75 p-2 hover:bg-slate-200"
+            className="absolute top-3 right-5 text-2xl rounded-3xl transition-all delay-75 p-2 hover:bg-slate-200 hover:text-black"
           >
             <MdOutlineEdit />
           </Link>
@@ -61,6 +76,16 @@ const ProfilePage = () => {
             height={120}
             className="rounded-full"
           />
+          {user?.premiumAccountHolder ? (
+            <div className="flex space-x-1">
+              <span>Premium User</span>
+              <span className="text-xl">
+                <MdVerified />
+              </span>
+            </div>
+          ) : (
+            ""
+          )}
           <p className="mt-2">{user?.name}</p>
           <p className="mt-2 mb-2">{user?.email}</p>
           <p className="">{user?.bio}</p>

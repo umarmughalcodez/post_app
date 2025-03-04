@@ -13,6 +13,7 @@ model Posts {
   description String   @db.VarChar(2000)
   image_url   String
   userEmail   String
+  likes       Likes[]
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
@@ -20,14 +21,40 @@ model Posts {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  name       String   @db.VarChar(50)
-  email      String   @unique
-  image      String?
-  bio        String?  @default("Tell about yourself") @db.VarChar(150)
-  username   String   @unique @default(cuid())
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id                   String      @id @default(cuid())
+  name                 String      @db.VarChar(50)
+  email                String      @unique
+  image                String?
+  bio                  String?     @default("Tell about yourself") @db.VarChar(150)
+  username             String      @unique @default(cuid())
+  premiumAccountHolder Boolean     @default(false)
+  likes                Likes[]
+  followers            Followers[]
+  created_at           DateTime    @default(now())
+  updated_at           DateTime    @updatedAt
 
   @@map("user")
+}
+
+model Likes {
+  id        String   @id @default(cuid())
+  userEmail String
+  postId    String
+  user      User     @relation(fields: [userEmail], references: [email])
+  post      Posts    @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userEmail, postId])
+  @@map("like")
+}
+
+model Followers {
+  id          String   @id @default(cuid())
+  authorEmail String
+  userEmail   String
+  author      User     @relation(fields: [authorEmail], references: [email])
+  createdAt   DateTime @default(now())
+
+  @@unique([userEmail, authorEmail])
+  @@map("followers")
 }

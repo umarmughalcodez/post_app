@@ -8,6 +8,10 @@ import { getSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 import FetchAuthorDetails from "@/components/User/FetchAuthorDetails";
+import { RiShareForwardLine } from "react-icons/ri";
+import { IoMdHeart } from "react-icons/io";
+import { IoMdHeartEmpty } from "react-icons/io";
+import { User } from "@/types/User";
 
 interface Post {
   id: string;
@@ -28,6 +32,10 @@ const Post = () => {
   const [isFormOpen, setFormOpen] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [likedPosts, setLikedPosts] = useState<string[] | null>(null);
+  const [followedUsers, setFollowedUsers] = useState<string[] | null>(null);
+  const [authors, setAuthors] = useState<{ [key: string]: User | null }>({});
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     setError(null);
@@ -50,10 +58,7 @@ const Post = () => {
         }
         setUserEmail(user.email as string);
 
-        const res = await fetch(`/api/posts/${postId}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(`/api/posts/${postId}`);
 
         const data = await res.json();
         setPost(data.data);
@@ -102,6 +107,85 @@ const Post = () => {
     }
   };
 
+  const handleFollow = async () => {
+    try {
+      const res = await fetch(`/api/user/follow?email=${post?.userEmail}`);
+      if (res.ok) {
+        const isFollowed = followedUsers?.includes(post?.userEmail as string);
+        if (isFollowed) {
+          toast.success(`${post?.userEmail} Un followed!`);
+        } else {
+          toast.success(`${post?.userEmail} followed!`);
+        }
+        fetchFollowedUsers();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    }
+  };
+
+  const fetchFollowedUsers = async () => {
+    const res = await fetch("/api/user/followed-users");
+    if (res.ok) {
+      const data = await res.json();
+      setFollowedUsers(data.followedUsers);
+    }
+  };
+
+  const fetchLikedPosts = async () => {
+    const res = await fetch("/api/user/liked-posts");
+    const data = await res.json();
+    setLikedPosts(data.likedPosts);
+  };
+
+  useEffect(() => {
+    fetchLikedPosts();
+    fetchFollowedUsers();
+  }, []);
+
+  const fetchAuthor = async (email: string, postId: string) => {
+    try {
+      const res = await fetch(`/api/user/publicData?email=${email}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch author data");
+      }
+      const data = await res.json();
+      setAuthors((prevAuthors) => ({
+        ...prevAuthors,
+        [postId]: data.user as User,
+      }));
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(err.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchLikedPosts();
+    fetchFollowedUsers();
+    if (post?.userEmail) {
+      fetchAuthor(post.userEmail, post.id);
+    }
+  }, [postId, post?.userEmail]);
+
+  const handleLikePost = async (postId: string) => {
+    const res = await fetch(`/api/posts/like?postId=${postId}`);
+
+    if (res.ok) {
+      const isLiked = likedPosts?.includes(postId);
+      if (isLiked) {
+        toast("💔 Post unliked!");
+      } else {
+        toast("💖 Post Liked!");
+      }
+      fetchLikedPosts();
+    } else {
+      toast.error("Failed to like post");
+    }
+  };
   if (deletionSuccess) {
     return (
       <div className="w-full grid place-items-center h-full">
@@ -140,17 +224,33 @@ const Post = () => {
     );
   }
 
-  const notify = () =>
-    toast("Link Copied!", {
-      duration: 2000,
-      icon: "✅",
-    });
+  const notify = () => toast.success("Link Copied!");
 
   const handleCopyLink = async (postId: string) => {
     const url = `http://localhost:3000/posts/${postId}`;
     await navigator.clipboard.writeText(url);
     notify();
-    //
+  };
+
+  const highlishtHashtags = (text: string) => {
+    const parts = text.split(/(\s+)/).map((part, index) => {
+      if (part.startsWith("#")) {
+        const keyword = part.substring(1);
+        return (
+          <span
+            key={index}
+            onClick={() => {
+              router.push(`/posts/search?keyword=${keyword}`);
+            }}
+            className="text-blue-400 hover:underline hover:underline-offset-4 cursor-pointer"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+    return <>{parts}</>;
   };
 
   return (
@@ -158,9 +258,6 @@ const Post = () => {
       <Toaster />
       <div className="grid place-items-center mt-14">
         {/* {User Details} */}
-        <div>
-          <FetchAuthorDetails userData={post?.userEmail} />
-        </div>
 
         {post?.image_url && (
           <Image
@@ -172,17 +269,43 @@ const Post = () => {
         )}
 
         <p className="mt-3 mb-3">
-          <b>Title:</b> {post?.title}
+          <b>Title:</b>{" "}
+          {/* <span className="cursor-pointer underline underline-offset-4"> */}
+          {highlishtHashtags(post?.title || "")}
+          {/* </span> */}
         </p>
         <b>Descrption:</b>
-        <p className="w-[70%] break-words">{post?.description}</p>
+        <p className="w-[70%] break-words">
+          {highlishtHashtags(post?.description || "")}
+        </p>
+        <button
+          onClick={() => handleLikePost(post?.id as string)}
+          className="bg-none text-red-700 text-xl p-2 hover:bg-slate-200 rounded-full cursor-pointer"
+        >
+          {likedPosts?.includes(post?.id as string) ? (
+            <IoMdHeart />
+          ) : (
+            <IoMdHeartEmpty />
+          )}
+        </button>
+        {post?.userEmail == userEmail ? null : (
+          <Button onClick={handleFollow}>
+            {followedUsers?.includes(post?.userEmail as string) ? (
+              <span>following @{authors[post?.id as string]?.username}</span>
+            ) : (
+              <span>follow @{authors[post?.id as string]?.username}</span>
+            )}
+          </Button>
+        )}
+
         <Button
           onClick={() => {
             handleCopyLink(post?.id as string);
           }}
-          className="bg-green-600 hover:bg-opacity-85 mt-4 mb-3"
+          className="mt-4 mb-3"
         >
           Share
+          <RiShareForwardLine />
         </Button>
 
         {userEmail === post?.userEmail && (
@@ -205,6 +328,10 @@ const Post = () => {
             </Button>
           </>
         )}
+      </div>
+
+      <div>
+        <FetchAuthorDetails userData={post?.userEmail} />
       </div>
 
       {error && <div className="text-red-700">{error}</div>}

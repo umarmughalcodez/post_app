@@ -4,6 +4,7 @@ export interface User {
   email: string;
   image: string;
   bio?: string;
+  premiumAccountHolder?: boolean;
   username?: string;
   created_at?: string;
 }

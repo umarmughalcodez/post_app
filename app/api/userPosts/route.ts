@@ -1,11 +1,23 @@
 import { auth } from "@/auth";
 import prisma from "@/prisma/db.config";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async () => {
+export const GET = async (req: NextRequest) => {
   try {
     const session = await auth();
     const user = session?.user;
+
+    const url = new URL(req.url);
+    const email = url.searchParams.get("email");
+
+    if (email) {
+      const posts = await prisma.posts.findMany({
+        where: {
+          userEmail: email as string,
+        },
+      });
+      return NextResponse.json({ status: 200, posts });
+    }
 
     if (!user) {
       return NextResponse.json({ message: "User not found", status: 404 });
@@ -16,8 +28,8 @@ export const GET = async () => {
         userEmail: user?.email as string,
       },
       orderBy: {
-        created_at: "desc"
-      }
+        created_at: "desc",
+      },
     });
 
     return NextResponse.json({

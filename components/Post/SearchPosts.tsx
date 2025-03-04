@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import Post from "./Post";
 import Loader from "@/components/Loader";
+import { useSearchParams } from "next/navigation";
+import Loading from "@/components/Loader";
 
 const SearchPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,58 +15,14 @@ const SearchPosts = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPosts, setTotalPosts] = useState<number>(0);
   const [selectedLimit, setSelectedLimit] = useState<number>(2);
+  const searchParams = useSearchParams();
+  const word = searchParams.get("keyword") as string;
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
     fetchPosts(keyword, 1);
   };
-
-  // const fetchPosts = async (searchKeyword: string, page: number) => {
-  //   setError("");
-  //   setShowNotFound(false);
-  //   setLoading(true);
-  //   setPosts([]);
-
-  //   try {
-  //     const res = await fetch("/api/posts/search", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         keyword: searchKeyword,
-  //         page,
-  //         limit: selectedLimit,
-  //       }),
-  //     });
-
-  //     if (!res.ok) {
-  //       throw new Error("Failed to search posts");
-  //     }
-
-  //     const data = await res.json();
-  //     setPosts(data.matchedPosts || []);
-  //     setTotalPosts(data.totalPosts || 0);
-
-  //     const matchedPosts = Array.isArray(data.matchedPosts)
-  //       ? data.matchedPosts
-  //       : [];
-
-  //     if (matchedPosts.length === 0) {
-  //       setShowNotFound(true);
-  //       setTimeout(() => {
-  //         setShowNotFound(false);
-  //       }, 2500);
-  //     }
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       setError(error.message);
-  //     } else {
-  //       setError("An unknown error occurred");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchPosts = useCallback(
     async (searchKeyword: string, page: number) => {
@@ -120,8 +78,15 @@ const SearchPosts = () => {
   }, [selectedLimit, page, fetchPosts]);
 
   useEffect(() => {
-    fetchPosts("", 1);
+    if (!word) {
+      fetchPosts("", 1);
+    }
   }, [fetchPosts]);
+
+  useEffect(() => {
+    setKeyword(word);
+    fetchPosts(word, 1);
+  }, [searchParams]);
 
   const handlePreviousPage = async () => {
     setPage((prevPage) => {
@@ -165,6 +130,7 @@ const SearchPosts = () => {
       </form>
       {posts.length > 0 ? (
         <div className="w-full grid place-items-center">
+          {!posts && <Loading />}
           <Post data={posts} />
         </div>
       ) : (

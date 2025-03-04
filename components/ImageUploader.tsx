@@ -14,17 +14,9 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
   const [error, setError] = useState<string>("");
 
-  // const handleUploadSuccess = async (event: any) => {
-  //   setError("");
-  //   const uploadedPublicId = event.info.public_id;
-
-  //   onUpload(uploadedPublicId);
-  // };
-
   const handleUploadSuccess = async (event: CloudinaryUploadWidgetResults) => {
     setError("");
 
-    // Check if event.info is of type CloudinaryUploadWidgetInfo
     if (event?.info && (event.info as CloudinaryUploadWidgetInfo).public_id) {
       const uploadedPublicId = (event.info as CloudinaryUploadWidgetInfo)
         .public_id;
@@ -36,13 +28,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
 
   const handleUploadError = (error: unknown) => {
     if (typeof error === "string" && error.includes("exceeds")) {
-      setError(
-        "File size exceeds the 2MB limit. Please upload a smaller file."
-      );
+      setError("File size exceeds the 2MB limit. Please upload a smaller file");
     } else if (error instanceof Error) {
       setError(error.message);
     } else {
-      setError("An unexpected error has occured");
+      setError("File size exceeds the 2MB limit. Please upload a smaller file");
     }
   };
 
@@ -51,12 +41,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
       <p className="text-white">Upload an Image</p>
       <CldUploadWidget
         uploadPreset="nextjs_posts"
-        // onSuccess={(event: CloudinaryUploadWidgetResults) => {
-        //   setError("");
-        //   const uploadedPublicId = event?.info?.public_id;
-
-        //   onUpload(uploadedPublicId);
-        // }}
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
         options={{
@@ -73,15 +57,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
               menuIcons: "#ffffff",
               text: "#ffffff",
               primaryText: "#ffffff",
-              textPrimary: "#ffffff"
-
+              textPrimary: "#ffffff",
             },
           },
         }}
       >
         {({ open }) => (
           <Button
-          type="button"
+            type="button"
             onClick={() => open?.()}
             className="bg-blue-400 hover:bg-opacity-80"
           >

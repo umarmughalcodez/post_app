@@ -10,17 +10,18 @@ import Image from "next/image";
 import { User } from "@/types/User";
 import Loading from "../Loader";
 import { useRouter } from "next/navigation";
+import { getSession } from "next-auth/react";
 
 const FetchAuthorDetails = ({ userData }: { userData: string | undefined }) => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const fetchUser = async () => {
+  const [fetchedUser, setFetchedUser] = useState<User | null>(null);
+  const fetchAuthor = async () => {
     try {
-      const userEmail = await userData;
+      const userEmail = userData;
       const res = await fetch(`/api/user/publicData?email=${userEmail}`);
       const data = await res.json();
       setUser(data.user);
-      console.log("Data", data);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error("Failed to fetch User details");
@@ -28,8 +29,14 @@ const FetchAuthorDetails = ({ userData }: { userData: string | undefined }) => {
     }
   };
 
+  const fetchUser = async () => {
+    const session = await getSession();
+    setFetchedUser(session?.user as User);
+  };
+
   useEffect(() => {
     fetchUser();
+    fetchAuthor();
   }, []);
 
   const formatDate = (dateString: string | undefined) => {
@@ -49,8 +56,15 @@ const FetchAuthorDetails = ({ userData }: { userData: string | undefined }) => {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <Button variant="link" onClick={() => router.push(`/profile`)}>
-          @{user?.username}
+        <Button
+          variant="link"
+          onClick={() => router.push(`/profile/public?email=${user.email}`)}
+        >
+          {user.email == fetchedUser?.email ? (
+            <span>Created by You</span>
+          ) : (
+            <span>Created by @{user?.username}</span>
+          )}
         </Button>
       </HoverCardTrigger>
       <HoverCardContent className="w-64 h-24">
@@ -65,19 +79,19 @@ const FetchAuthorDetails = ({ userData }: { userData: string | undefined }) => {
           />
           <div className="space-y-1">
             <h4 className="text-sm font-semibold mt-1">
-              {/* <Button onClick={() => router.push(`/profile`)}> */}
               <span
                 className="truncate w-[100%] text-center hover:underline-offset-2 hover:underline hover:cursor-pointer"
-                onClick={() => router.push("/profile")}
+                onClick={() =>
+                  router.push(`/profile/public?email=${user.email}`)
+                }
               >
                 {user?.name}
               </span>
-              {/* </Button> */}
             </h4>
 
             <div className="flex items-center pt-1">
               <span className="text-xs text-muted-foreground">
-                Created at {formatDate(user?.created_at)}
+                Post created at <br /> {formatDate(user?.created_at)}
               </span>
             </div>
           </div>
