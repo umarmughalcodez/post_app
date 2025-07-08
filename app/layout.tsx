@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { auth } from "@/auth";
 import { User } from "@/types/User";
+import { ReduxProvider } from "./providers";
+import { SessionProvider } from "next-auth/react";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -31,7 +33,7 @@ export default async function RootLayout({
       </head>
       <body className={`${poppins.className} antialiased`}>
         <Navbar user={user} />
-        {children}
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

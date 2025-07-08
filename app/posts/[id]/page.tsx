@@ -12,6 +12,16 @@ import { RiShareForwardLine } from "react-icons/ri";
 import { IoMdHeart } from "react-icons/io";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { User } from "@/types/User";
+import { likePost, setLikedPosts, unlikePost } from "@/store/likesSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import CommentsSection from "@/components/Post/CommentsSection";
+import {
+  followUser,
+  setFollowedUsers,
+  unfollowUser,
+} from "@/store/followersSlice";
+import { Darumadrop_One } from "next/font/google";
 
 interface Post {
   id: string;
@@ -19,23 +29,61 @@ interface Post {
   description: string;
   image_url: string;
   userEmail: string;
+  _count: {
+    views: number;
+  };
+}
+
+interface UserInterface {
+  id: string;
+  email: string;
+  image: string;
+  name: string;
 }
 
 const Post = () => {
   const params = useParams();
   const postId = params.id;
   const router = useRouter();
-
+  const dispatch = useDispatch();
   const [post, setPost] = useState<Post | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deletionSuccess, setDeletionSuccess] = useState<boolean>(false);
   const [isFormOpen, setFormOpen] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [likedPosts, setLikedPosts] = useState<string[] | null>(null);
-  const [followedUsers, setFollowedUsers] = useState<string[] | null>(null);
+  const likedPosts = useSelector((state: RootState) => state.likes.likedPosts);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [user, setUser] = useState<UserInterface>();
+  const followedUsers = useSelector(
+    (state: RootState) => state.followers.followedUsers
+  );
   const [authors, setAuthors] = useState<{ [key: string]: User | null }>({});
-  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const session = await getSession();
+      setUser(session?.user as UserInterface);
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const recordView = async () => {
+      await fetch("/api/posts/views", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: post?.id,
+          userEmail: user?.email,
+        }),
+      });
+    };
+
+    recordView();
+  }, [user, post?.id]);
 
   useEffect(() => {
     setError(null);
@@ -111,11 +159,15 @@ const Post = () => {
     try {
       const res = await fetch(`/api/user/follow?email=${post?.userEmail}`);
       if (res.ok) {
+        const data = await res.json();
+        const username = data.user.username;
         const isFollowed = followedUsers?.includes(post?.userEmail as string);
         if (isFollowed) {
-          toast.success(`${post?.userEmail} Un followed!`);
+          dispatch(unfollowUser(post?.userEmail as string));
+          toast.success(`@${username} Unfollowed!`);
         } else {
-          toast.success(`${post?.userEmail} followed!`);
+          dispatch(followUser(post?.userEmail as string));
+          toast.success(`@${username} followed!`);
         }
         fetchFollowedUsers();
       }
@@ -130,14 +182,14 @@ const Post = () => {
     const res = await fetch("/api/user/followed-users");
     if (res.ok) {
       const data = await res.json();
-      setFollowedUsers(data.followedUsers);
+      dispatch(setFollowedUsers(data.followedUsers));
     }
   };
 
   const fetchLikedPosts = async () => {
     const res = await fetch("/api/user/liked-posts");
     const data = await res.json();
-    setLikedPosts(data.likedPosts);
+    dispatch(setLikedPosts(data.likedPosts));
   };
 
   useEffect(() => {
@@ -177,8 +229,10 @@ const Post = () => {
     if (res.ok) {
       const isLiked = likedPosts?.includes(postId);
       if (isLiked) {
+        dispatch(unlikePost(postId));
         toast("💔 Post unliked!");
       } else {
+        dispatch(likePost(postId));
         toast("💖 Post Liked!");
       }
       fetchLikedPosts();
@@ -186,6 +240,7 @@ const Post = () => {
       toast.error("Failed to like post");
     }
   };
+
   if (deletionSuccess) {
     return (
       <div className="w-full grid place-items-center h-full">
@@ -227,12 +282,12 @@ const Post = () => {
   const notify = () => toast.success("Link Copied!");
 
   const handleCopyLink = async (postId: string) => {
-    const url = `http://localhost:3000/posts/${postId}`;
+    const url = `${window.location.href}`;
     await navigator.clipboard.writeText(url);
     notify();
   };
 
-  const highlishtHashtags = (text: string) => {
+  const highlightHashtags = (text: string) => {
     const parts = text.split(/(\s+)/).map((part, index) => {
       if (part.startsWith("#")) {
         const keyword = part.substring(1);
@@ -265,19 +320,32 @@ const Post = () => {
             alt="Post's Image"
             width={300}
             height={350}
+            className="shadow-[#555] shadow-lg rounded-xl"
           />
         )}
 
-        <p className="mt-3 mb-3">
-          <b>Title:</b>{" "}
-          {/* <span className="cursor-pointer underline underline-offset-4"> */}
-          {highlishtHashtags(post?.title || "")}
-          {/* </span> */}
-        </p>
-        <b>Descrption:</b>
-        <p className="w-[70%] break-words">
-          {highlishtHashtags(post?.description || "")}
-        </p>
+        <div className="w-full h-full grid place-items-center mt-5 mb-5">
+          <p className="mt-3 mb-3 text-center">
+            <b>Title:</b> {highlightHashtags(post?.title || "")}
+          </p>
+          <b>Description:</b>
+          <p className="break-words text-center max-w-96">
+            {showFullDescription
+              ? highlightHashtags(post?.description || "") // Show full description
+              : highlightHashtags(
+                  (post?.description || "").slice(0, 100) // Show first 100 characters
+                )}
+          </p>
+          {post?.description && post?.description.length > 100 && (
+            <button
+              onClick={() => setShowFullDescription(!showFullDescription)}
+              className="text-blue-500 hover:underline mt-2"
+            >
+              {showFullDescription ? "Show Less" : "Show More"}
+            </button>
+          )}
+        </div>
+        <div>Views: {post?._count.views}</div>
         <button
           onClick={() => handleLikePost(post?.id as string)}
           className="bg-none text-red-700 text-xl p-2 hover:bg-slate-200 rounded-full cursor-pointer"
@@ -288,6 +356,7 @@ const Post = () => {
             <IoMdHeartEmpty />
           )}
         </button>
+
         {post?.userEmail == userEmail ? null : (
           <Button onClick={handleFollow}>
             {followedUsers?.includes(post?.userEmail as string) ? (
@@ -333,6 +402,8 @@ const Post = () => {
       <div>
         <FetchAuthorDetails userData={post?.userEmail} />
       </div>
+
+      <CommentsSection postId={post?.id as string} />
 
       {error && <div className="text-red-700">{error}</div>}
     </div>

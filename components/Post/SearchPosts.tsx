@@ -84,8 +84,8 @@ const SearchPosts = () => {
   }, [fetchPosts]);
 
   useEffect(() => {
-    setKeyword(word);
-    fetchPosts(word, 1);
+    setKeyword(word || "");
+    fetchPosts(word || "", 1);
   }, [searchParams]);
 
   const handlePreviousPage = async () => {

@@ -7,7 +7,7 @@ export const GET = async (req: NextRequest) => {
     const session = await auth();
     const user = session?.user;
     const url = new URL(req.url);
-    const postId = url.searchParams.get("postId") as string;
+    const postId = url.searchParams.get("postId");
 
     if (!user) {
       return NextResponse.json({
@@ -24,7 +24,7 @@ export const GET = async (req: NextRequest) => {
       where: {
         userEmail_postId: {
           userEmail: user.email as string,
-          postId,
+          postId: postId as string,
         },
       },
     });
@@ -34,19 +34,20 @@ export const GET = async (req: NextRequest) => {
         where: {
           userEmail_postId: {
             userEmail: user.email as string,
-            postId,
+            postId: postId as string,
           },
         },
       });
+
       return NextResponse.json({
         status: 200,
-        messagee: "Post un-liked successfully",
+        message: "Post un-liked successfully",
       });
     }
 
     await prisma.likes.create({
       data: {
-        postId,
+        postId: postId as string,
         userEmail: user.email as string,
       },
     });
@@ -56,8 +57,7 @@ export const GET = async (req: NextRequest) => {
       message: "Post liked successfully",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message, status: 400 });
-    }
+    console.error("Error handling like:", error);
+    return NextResponse.json({ error: "Internal Server Error", status: 500 });
   }
 };

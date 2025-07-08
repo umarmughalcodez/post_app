@@ -100,7 +100,7 @@ const settings = () => {
       }
 
       if (res.ok) {
-        router.push("/profile");
+        window.location.href = "/profile";
       }
     } catch (error) {
       if (error instanceof Error) {

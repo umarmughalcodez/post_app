@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Loader from "../Loader";
 import toast, { Toaster } from "react-hot-toast";
 import { IoMdHeartEmpty } from "react-icons/io";
@@ -11,6 +11,14 @@ import { User } from "@/types/User";
 import { Button } from "../ui/button";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { likePost, setLikedPosts, unlikePost } from "@/store/likesSlice";
+import {
+  followUser,
+  setFollowedUsers,
+  unfollowUser,
+} from "@/store/followersSlice";
 
 interface Post {
   id: string;
@@ -25,12 +33,16 @@ interface PostData {
 }
 
 const Post = (data: PostData) => {
+  const dispatch = useDispatch();
   const [posts, setPosts] = useState<Post[]>([]);
   const [authors, setAuthors] = useState<{ [key: string]: User | null }>({});
-  const [user, setUser] = useState<User | null>(null);
-
-  const [likedPosts, setLikedPosts] = useState<string[] | null>(null);
-  const [followedUsers, setFollowedUsers] = useState<string[] | null>(null);
+  const user = useSelector((state: RootState) => state.user.user);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const likedPosts = useSelector((state: RootState) => state.likes.likedPosts);
+  const followedUsers = useSelector(
+    (state: RootState) => state.followers.followedUsers
+  );
 
   const router = useRouter();
 
@@ -60,11 +72,6 @@ const Post = (data: PostData) => {
     }
   };
 
-  const fetchUser = async () => {
-    const session = await getSession();
-    setUser(session?.user as User);
-  };
-
   useEffect(() => {
     posts.forEach((post) => {
       fetchAuthor(post.userEmail, post.id);
@@ -76,6 +83,20 @@ const Post = (data: PostData) => {
       duration: 2000,
     });
 
+  if (loading) {
+    return <Loader />;
+  }
+
+  useEffect(() => {
+    const verifyUserEmail = async () => {
+      if (!userEmail) {
+        const session = await getSession();
+        setUserEmail(session?.user?.email as string);
+      }
+    };
+    verifyUserEmail();
+  }, []);
+
   const handleCopyLink = async (postId: string) => {
     const url = `${window.location.origin}/posts/${postId}`;
     await navigator.clipboard.writeText(url);
@@ -84,13 +105,12 @@ const Post = (data: PostData) => {
   const fetchLikedPosts = async () => {
     const res = await fetch("/api/user/liked-posts");
     const data = await res.json();
-    setLikedPosts(data.likedPosts);
+    dispatch(setLikedPosts(data.likedPosts));
   };
 
   useEffect(() => {
     fetchLikedPosts();
     fetchFollowedUsers();
-    fetchUser();
   }, []);
 
   const handleLikePost = async (postId: string) => {
@@ -99,8 +119,10 @@ const Post = (data: PostData) => {
     if (res.ok) {
       const isLiked = likedPosts?.includes(postId);
       if (isLiked) {
+        dispatch(unlikePost(postId));
         toast("💔 Post unliked!");
       } else {
+        dispatch(likePost(postId));
         toast("💖 Post Liked!");
       }
       fetchLikedPosts();
@@ -114,8 +136,10 @@ const Post = (data: PostData) => {
     if (res.ok) {
       const isFollowed = followedUsers?.includes(email);
       if (isFollowed) {
-        toast.success(`@${username} Un followed!`);
+        dispatch(unfollowUser(email));
+        toast.success(`@${username} Unfollowed!`);
       } else {
+        dispatch(followUser(email));
         toast.success(`@${username} followed!`);
       }
       fetchFollowedUsers();
@@ -125,10 +149,10 @@ const Post = (data: PostData) => {
   const fetchFollowedUsers = async () => {
     const res = await fetch("/api/user/followed-users");
     const data = await res.json();
-    setFollowedUsers(data.followedUsers);
+    dispatch(setFollowedUsers(data.followedUsers));
   };
 
-  const highlishtHashtags = (text: string) => {
+  const highlightHashtags = (text: string) => {
     const parts = text.split(/(\s+)/).map((part, index) => {
       if (part.startsWith("#")) {
         const keyword = part.substring(1);
@@ -150,10 +174,10 @@ const Post = (data: PostData) => {
   };
 
   return (
-    <div>
+    <div className="">
       <Toaster />
 
-      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {posts?.length > 0 ? (
           posts?.map((post) => (
             <li
@@ -166,13 +190,13 @@ const Post = (data: PostData) => {
                 width={250}
                 height={250}
                 onClick={() => router.push(`/posts/${post.id}`)}
-                className="cursor-pointer mt-1 mb-2 w-auto"
+                className="cursor-pointer mb-2 w-auto mt-3"
               />
               <p className="w-[60%] text-center truncate">
-                {highlishtHashtags(post.title || "")}
+                {highlightHashtags(post.title || "")}
               </p>
               <p className="w-[70%] truncate text-center">
-                {highlishtHashtags(post.description || "")}
+                {highlightHashtags(post.description || "")}
               </p>
               <div className="userDetails flex m-1 space-x-2">
                 {window.location.pathname == "/profile/public" ||
@@ -199,9 +223,8 @@ const Post = (data: PostData) => {
                     )}
               </div>
               <div className="flex text-2xl space-x-3 justify-center w-[95%]">
-                {window.location.pathname == "/profile/public" ? null : authors[
-                    post.id
-                  ]?.email == user?.email ? null : (
+                {window.location.pathname == "/profile/public" ||
+                authors[post.id]?.email == userEmail ? null : (
                   <Button
                     className="w-[60%]"
                     onClick={() =>

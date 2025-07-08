@@ -1,4 +1,6 @@
+import { auth } from "@/auth";
 import prisma from "@/prisma/db.config";
+import { getSession } from "next-auth/react";
 import { NextRequest, NextResponse } from "next/server";
 
 const createResponse = (status: number, message: string, data?: unknown) => {
@@ -12,13 +14,21 @@ interface Context {
 }
 
 export const GET = async (req: NextRequest, context: Context) => {
+  const session = await auth();
+  const user = session?.user;
+
   try {
     const { id } = await context.params;
-
     const post = await prisma.posts.findUnique({
       where: {
         id,
-        // userEmail: user?.email as string,
+      },
+      include: {
+        _count: {
+          select: {
+            views: true,
+          },
+        },
       },
     });
 

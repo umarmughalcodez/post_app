@@ -1,5 +1,4 @@
 "use client";
-import { User } from "@/types/User";
 import React, { useEffect, useState } from "react";
 import Loading from "@/components/Loader";
 import Image from "next/image";
@@ -8,30 +7,36 @@ import Link from "next/link";
 import FetchUserPosts from "@/components/Post/FetchUserPosts";
 import { MdVerified } from "react-icons/md";
 import { LuCrown } from "react-icons/lu";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { setUser } from "@/store/userSlice";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user.user);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/user");
-      if (!res.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const data = await res.json();
-      setUser(data.user);
-    } catch (err) {
-      if (err instanceof Error) setError(err?.message as string);
-    } finally {
-      setLoading(false);
+  const verifyUser = () => {
+    if (!user || !user.email) {
+      setLoading(true);
+      fetch("/api/user")
+        .then((res) => {
+          if (!res.ok) {
+            console.log(res);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          dispatch(setUser(data.user));
+          setLoading(false);
+        });
     }
   };
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    verifyUser();
+  }, [user, dispatch]);
 
   if (loading) return <Loading />;
   if (error) return <div className="text-red-600">Error: {error}</div>;
@@ -69,13 +74,15 @@ const ProfilePage = () => {
           >
             <MdOutlineEdit />
           </Link>
-          <Image
-            src={user?.image as string}
-            alt="User's Image"
-            width={120}
-            height={120}
-            className="rounded-full"
-          />
+          {user?.image && (
+            <Image
+              src={user?.image as string}
+              alt="User's Image"
+              width={120}
+              height={120}
+              className="rounded-full"
+            />
+          )}
           {user?.premiumAccountHolder ? (
             <div className="flex space-x-1">
               <span>Premium User</span>
@@ -86,8 +93,10 @@ const ProfilePage = () => {
           ) : (
             ""
           )}
+          {/* <p className="mt-2">{user.}</p> */}
           <p className="mt-2">{user?.name}</p>
-          <p className="mt-2 mb-2">{user?.email}</p>
+          <p></p>
+          {/* <p className="mt-2 mb-2">{user?.email}</p> */}
           <p className="">{user?.bio}</p>
           <p className="">@{user?.username}</p>
           <Link

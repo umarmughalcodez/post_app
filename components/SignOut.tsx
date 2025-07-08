@@ -1,5 +1,6 @@
 import { signOut } from "@/auth";
 import { Button } from "./ui/button";
+import { clearUser } from "@/store/userSlice";
 
 export default function SignOut() {
   return (
@@ -7,6 +8,7 @@ export default function SignOut() {
       action={async () => {
         "use server";
         await signOut({ redirectTo: "/sign-in" });
+        clearUser();
       }}
     >
       <Button type="submit" variant={"destructive"}>

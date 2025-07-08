@@ -21,8 +21,8 @@ export const GET = async (req: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        created_at: "desc"
-      }
+        created_at: "desc",
+      },
     });
 
     const totalPosts = await prisma.posts.count();

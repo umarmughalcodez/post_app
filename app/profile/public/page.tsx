@@ -10,23 +10,28 @@ import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 import { MdVerified } from "react-icons/md";
 import FetchPublicPosts from "@/components/Post/FecthPublicPosts";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { likePost, setLikedPosts, unlikePost } from "@/store/likesSlice";
+import {
+  followUser,
+  setFollowedUsers,
+  unfollowUser,
+} from "@/store/followersSlice";
 
 const PublicProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fetchedUser, setFecthedUser] = useState<User | null>(null);
-  const [followedUsers, setFollowedUsers] = useState<string[] | null>(null);
+  const followedUsers = useSelector(
+    (state: RootState) => state.followers.followedUsers
+  );
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
-
-  useEffect(() => {
-    if (!email) {
-      router.push("/profile");
-    }
-  }, [email, router]);
 
   const fetchUser = async () => {
     const session = await getSession();
@@ -51,22 +56,16 @@ const PublicProfilePage = () => {
     fetchFollowedUsers();
   }, []);
 
-  useEffect(() => {
-    if (fetchedUser) {
-      if (fetchedUser?.email === email) {
-        router.push("/profile");
-      }
-    }
-  }, [email, fetchedUser]);
-
-  const handleFollow = async () => {
-    const res = await fetch(`/api/user/follow?email=${user?.email}`);
+  const handleFollow = async (email: string, username: string) => {
+    const res = await fetch(`/api/user/follow?email=${email}`);
     if (res.ok) {
-      const isFollowed = followedUsers?.includes(user?.email as string);
+      const isFollowed = followedUsers?.includes(email);
       if (isFollowed) {
-        toast.success(`@${user?.username} Un followed!`);
+        dispatch(unfollowUser(email));
+        toast.success(`@${username} Unfollowed!`);
       } else {
-        toast.success(`@${user?.username} followed!`);
+        dispatch(followUser(email));
+        toast.success(`@${username} followed!`);
       }
       fetchFollowedUsers();
     }
@@ -75,8 +74,16 @@ const PublicProfilePage = () => {
   const fetchFollowedUsers = async () => {
     const res = await fetch("/api/user/followed-users");
     const data = await res.json();
-    setFollowedUsers(data.followedUsers);
+    dispatch(setFollowedUsers(data.followedUsers));
   };
+
+  useEffect(() => {
+    if (fetchedUser) {
+      if (fetchedUser?.email === email) {
+        router.push("/profile");
+      }
+    }
+  }, [email, fetchedUser]);
 
   if (loading) return <Loading />;
   if (error) return <div className="text-red-600">Error: {error}</div>;
@@ -118,7 +125,9 @@ const PublicProfilePage = () => {
           <p className="mt-2 mb-2">{user?.email}</p>
           <p className="">{user?.bio}</p>
           <p className="">@{user?.username}</p>
-          <Button onClick={handleFollow}>
+          <Button
+            onClick={() => handleFollow(user.email, user.username as string)}
+          >
             {followedUsers?.includes(user.email as string) ? (
               <span>Following</span>
             ) : (

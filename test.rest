@@ -1,8 +1,6 @@
-POST http://localhost:3000/api/user/verify
+POST http://localhost:3000/api/posts/comment
 Content-Type: application/json
 
 {
-    "name": "Umar",
-    "email": "umar1@mughal.com",
-    "image": "https://google.com"
+    "comment": "Helo"
 }
