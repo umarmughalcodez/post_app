@@ -81,7 +81,7 @@ model post_views {
   postId    String
   userEmail String
   viewed_at DateTime @default(now())
-  post      Posts    @relation(fields: [postId], references: [id])
+  post      Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userEmail], references: [email])
 
   @@unique([userEmail, postId])

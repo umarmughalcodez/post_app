@@ -10,12 +10,17 @@ import { LuCrown } from "react-icons/lu";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { setUser } from "@/store/userSlice";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [postBtnDisabled, setPostBtnDisabled] = useState(false);
+  const router = useRouter();
 
   const verifyUser = () => {
     if (!user || !user.email) {
@@ -34,6 +39,28 @@ const ProfilePage = () => {
     }
   };
 
+  const handleCheckLimit = async () => {
+    if (!user?.premiumAccountHolder) {
+      const res = await fetch("/api/posts/limit");
+      if (!res.ok) {
+        throw new Error("Failed to fetch limit");
+      }
+
+      const data = await res.json();
+
+      if (data.limit >= 5) {
+        toast.error(
+          "You have reached maximum post creation limit! Upgrade to Pro"
+        );
+        return;
+      } else {
+        router.push("/posts/create");
+      }
+    } else {
+      router.push("/posts/create");
+    }
+  };
+
   useEffect(() => {
     verifyUser();
     console.log("User", user);
@@ -44,6 +71,7 @@ const ProfilePage = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative ">
+      <Toaster />
       <div className="w-full h-full grid place-items-center ">
         <div
           className="space-y-3 grid place-items-center mt-5 rounded-xl py-12 px-24 relative text-white"
@@ -107,12 +135,12 @@ const ProfilePage = () => {
           >
             Sign Out
           </Link>
-          <Link
+          <Button
             className="bg-black mt-4 rounded-xl py-1 px-2 text-white cursor-pointer"
-            href={"/posts/create"}
+            onClick={handleCheckLimit}
           >
             Create Post
-          </Link>
+          </Button>
         </div>
         <div>
           <FetchUserPosts />

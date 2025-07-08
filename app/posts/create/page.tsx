@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CldImage } from "next-cloudinary";
 import { MdDelete } from "react-icons/md";
@@ -87,6 +87,13 @@ const CreatePost = () => {
   const handleDeleteImage = async () => {
     setPublicId("");
   };
+
+  useEffect(() => {
+    const checkPostsLimit = async () => {
+      const res = await fetch("/api/posts/limit");
+    };
+    checkPostsLimit();
+  }, []);
 
   if (loading) {
     return <Loader />;

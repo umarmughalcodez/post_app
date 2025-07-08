@@ -148,6 +148,7 @@ const Post = () => {
       }
 
       setDeletionSuccess(true);
+      toast.success("Post deleted successfully!");
       setTimeout(() => {
         router.push("/profile");
       }, 1500);

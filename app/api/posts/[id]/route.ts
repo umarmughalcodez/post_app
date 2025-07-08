@@ -86,23 +86,33 @@ export const PUT = async (req: NextRequest, context: Context) => {
 export const DELETE = async (req: Request, context: Context) => {
   const { id } = await context.params;
 
-  console.log("ID is Delete func", id);
+  try {
+    const post = await prisma.posts.findUnique({
+      where: {
+        id: id as string,
+      },
+    });
 
-  const post = await prisma.posts.findUnique({
-    where: {
-      id,
-    },
-  });
+    if (!post) {
+      return createResponse(404, "Post not found");
+    }
 
-  if (!post) {
-    return createResponse(404, "Post not found");
+    await prisma.post_views.deleteMany({
+      where: {
+        id: id as string,
+      },
+    });
+
+    await prisma.posts.deleteMany({
+      where: {
+        id: id as string,
+      },
+    });
+
+    return createResponse(200, "Post deleted successfully");
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
   }
-
-  await prisma.posts.delete({
-    where: {
-      id,
-    },
-  });
-
-  return createResponse(200, "Post deleted successfully");
 };
