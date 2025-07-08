@@ -25,6 +25,7 @@ const AllPosts = () => {
 
       const data = await res.json();
       setPosts(data.data.posts || []);
+      console.log("All Posts", data.data.posts);
       setTotalPosts(data.data.totalPosts || 0);
     } catch (error) {
       console.error(error);

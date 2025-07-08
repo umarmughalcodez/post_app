@@ -54,8 +54,6 @@ const Post = (data: PostData) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!data?.data || !Array.isArray(data.data)) return;
-
     setPosts(data.data);
 
     const likesObj: { [postId: string]: number } = {};

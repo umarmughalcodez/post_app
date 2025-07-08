@@ -11,6 +11,7 @@ const FetchUserPosts = () => {
         const res = await fetch(`/api/userPosts`);
         const data = await res.json();
         setPosts(data.posts || []);
+        console.log("Fetch Posts", data.posts);
       } catch (error) {
         console.error(error);
       }

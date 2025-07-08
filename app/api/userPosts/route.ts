@@ -18,8 +18,8 @@ export const GET = async (req: NextRequest) => {
         include: {
           _count: {
             select: {
-              likes: true,
               views: true,
+              likes: true,
             },
           },
         },
@@ -37,6 +37,14 @@ export const GET = async (req: NextRequest) => {
       },
       orderBy: {
         created_at: "desc",
+      },
+      include: {
+        _count: {
+          select: {
+            views: true,
+            likes: true,
+          },
+        },
       },
     });
 
