@@ -22,6 +22,7 @@ import {
   unfollowUser,
 } from "@/store/followersSlice";
 import { Darumadrop_One } from "next/font/google";
+import { FaRegEye } from "react-icons/fa";
 
 interface Post {
   id: string;
@@ -31,6 +32,7 @@ interface Post {
   userEmail: string;
   _count: {
     views: number;
+    likes: number;
   };
 }
 
@@ -55,6 +57,8 @@ const Post = () => {
   const likedPosts = useSelector((state: RootState) => state.likes.likedPosts);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [user, setUser] = useState<UserInterface>();
+  const [likesCount, setLikesCount] = useState<number>(0);
+
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
   );
@@ -110,6 +114,8 @@ const Post = () => {
 
         const data = await res.json();
         setPost(data.data);
+        setLikesCount(data.data._count.likes);
+        console.log("Posts", data.data);
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
@@ -231,9 +237,14 @@ const Post = () => {
       if (isLiked) {
         dispatch(unlikePost(postId));
         toast("💔 Post unliked!");
+        fetchLikedPosts();
+        setLikesCount((prev) => prev - 1);
       } else {
         dispatch(likePost(postId));
         toast("💖 Post Liked!");
+
+        fetchLikedPosts();
+        setLikesCount((prev) => prev + 1);
       }
       fetchLikedPosts();
     } else {
@@ -345,7 +356,10 @@ const Post = () => {
             </button>
           )}
         </div>
-        <div>Views: {post?._count.views}</div>
+        <div className="flex">
+          <FaRegEye className="" /> {post?._count.views}
+        </div>
+        <div>Likes: {likesCount}</div>
         <button
           onClick={() => handleLikePost(post?.id as string)}
           className="bg-none text-red-700 text-xl p-2 hover:bg-slate-200 rounded-full cursor-pointer"

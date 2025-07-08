@@ -27,6 +27,7 @@ export const GET = async (req: NextRequest, context: Context) => {
         _count: {
           select: {
             views: true,
+            likes: true,
           },
         },
       },

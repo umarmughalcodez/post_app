@@ -19,6 +19,7 @@ import {
   setFollowedUsers,
   unfollowUser,
 } from "@/store/followersSlice";
+import { FaRegEye } from "react-icons/fa";
 
 interface Post {
   id: string;
@@ -26,6 +27,10 @@ interface Post {
   description: string;
   image_url: string;
   userEmail: string;
+  _count: {
+    views: number;
+    likes: number;
+  };
 }
 
 interface PostData {
@@ -48,6 +53,7 @@ const Post = (data: PostData) => {
 
   useEffect(() => {
     setPosts(data.data);
+    console.log("Posts data", data.data);
   }, [data]);
 
   if (!posts) {
@@ -222,6 +228,9 @@ const Post = (data: PostData) => {
                       </div>
                     )}
               </div>
+              <div className="flex items-center gap-1 px-1">
+                <FaRegEye className="" /> {post._count.views}
+              </div>
               <div className="flex text-2xl space-x-3 justify-center w-[95%]">
                 {window.location.pathname == "/profile/public" ||
                 authors[post.id]?.email == userEmail ? null : (
@@ -245,7 +254,6 @@ const Post = (data: PostData) => {
                     </span>
                   </Button>
                 )}
-
                 <button
                   onClick={() => handleLikePost(post.id as string)}
                   className="bg-none text-red-700 text-xl p-2 hover:bg-slate-200 rounded-full cursor-pointer"
