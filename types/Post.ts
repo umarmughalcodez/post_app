@@ -4,4 +4,8 @@ interface PostProps {
   image_url: string;
   title: string;
   description: string;
+  _count: {
+    likes: number;
+    views: number;
+  };
 }

@@ -27,6 +27,14 @@ export const POST = async (req: NextRequest) => {
       },
       skip,
       take: limit,
+      include: {
+        _count: {
+          select: {
+            views: true,
+            likes: true,
+          },
+        },
+      },
     });
 
     const totalPosts = await prisma.posts.count({

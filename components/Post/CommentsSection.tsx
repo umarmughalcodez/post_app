@@ -7,6 +7,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { MdClose, MdEdit } from "react-icons/md";
 import { useRouter } from "next/navigation";
+import { getSession } from "next-auth/react";
+import { User } from "@/types/User";
 
 interface CommentSectionProps {
   postId: string;
@@ -28,6 +30,7 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [editedText, setEditedText] = useState("");
   const [comments, setComments] = useState<CommentProps[]>([]);
   const router = useRouter();
+  const [fetcheduser, setFetchedUser] = useState<User>();
   const user = useSelector((state: RootState) => state.user.user);
   const [showEditPopup, setShowEditPopup] = useState(false);
 
@@ -54,6 +57,15 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
       setComments(data.comments);
     }
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const session = await getSession();
+      const user = session?.user;
+      setFetchedUser(user as User);
+    };
+    fetchUser();
+  }, []);
 
   const handleEditComment = async () => {
     try {
@@ -104,18 +116,20 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
           {comments.map((comment) => (
             <li
               key={comment.id}
-              className="flex flex-col relative p-4 bg-white rounded-lg shadow-md space-y-2"
+              className="flex flex-col relative p-4 rounded-lg shadow-md space-y-2 bg-white"
             >
-              <span
-                className="font-bold hover:underline underline-offset-2 cursor-pointer"
-                onClick={() =>
-                  router.push(`/profile/public?email=${comment.userEmail}`)
-                }
-              >
-                @{comment.user.username}
-              </span>
+              <p className="font-bold">
+                <span
+                  className=" cursor-pointer hover:underline underline-offset-2"
+                  onClick={() =>
+                    router.push(`/profile/public?email=${comment.userEmail}`)
+                  }
+                >
+                  @{comment.user.username}
+                </span>
+              </p>
               <span className="text-center">{comment.text}</span>
-              {comment.userEmail === user?.email ? (
+              {comment.userEmail === fetcheduser?.email ? (
                 <button
                   className="bg-none text-lg absolute top-2 right-2 bg-white bg-opacity-0 rounded-full p-1 hover:bg-opacity-50 transition-opacity delay-200"
                   onClick={() => {

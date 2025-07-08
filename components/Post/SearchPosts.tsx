@@ -48,6 +48,7 @@ const SearchPosts = () => {
 
         const data = await res.json();
         setPosts(data.matchedPosts || []);
+        console.log("Posts", data);
         setTotalPosts(data.totalPosts || 0);
 
         const matchedPosts = Array.isArray(data.matchedPosts)

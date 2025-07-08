@@ -10,6 +10,15 @@ export const GET = async (req: NextRequest) => {
       where: {
         email: email as string,
       },
+      include: {
+        _count: {
+          select: {
+            views: true,
+            followers: true,
+            likes: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({ status: 200, user });

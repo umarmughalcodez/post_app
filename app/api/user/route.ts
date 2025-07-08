@@ -28,6 +28,15 @@ export const GET = async () => {
       where: {
         email: fetchedUser.email as string,
       },
+      include: {
+        _count: {
+          select: {
+            followers: true,
+            likes: true,
+            views: true,
+          },
+        },
+      },
     });
 
     if (!existingUser) {
@@ -36,6 +45,15 @@ export const GET = async () => {
           name: fetchedUser.name as string,
           email: fetchedUser.email as string,
           image: getRandomImage(),
+        },
+        include: {
+          _count: {
+            select: {
+              followers: true,
+              likes: true,
+              views: true,
+            },
+          },
         },
       });
     }

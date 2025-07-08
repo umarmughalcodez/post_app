@@ -23,7 +23,7 @@ const ProfilePage = () => {
       fetch("/api/user")
         .then((res) => {
           if (!res.ok) {
-            console.log(res);
+            console.log("Response", res);
           }
           return res.json();
         })
@@ -36,6 +36,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     verifyUser();
+    console.log("User", user);
   }, [user, dispatch]);
 
   if (loading) return <Loading />;
@@ -99,6 +100,7 @@ const ProfilePage = () => {
           {/* <p className="mt-2 mb-2">{user?.email}</p> */}
           <p className="">{user?.bio}</p>
           <p className="">@{user?.username}</p>
+          <p>Followers: {user?._count.followers}</p>
           <Link
             className="bg-red-500 rounded-xl py-1 px-2 text-white cursor-pointer"
             href={"/sign-out"}

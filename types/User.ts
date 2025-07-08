@@ -6,5 +6,10 @@ export interface User {
   bio?: string;
   premiumAccountHolder?: boolean;
   username?: string;
+  _count: {
+    followers: number;
+    likes: number;
+    views: number;
+  };
   created_at?: string;
 }

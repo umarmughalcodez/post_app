@@ -45,6 +45,8 @@ const Post = (data: PostData) => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const likedPosts = useSelector((state: RootState) => state.likes.likedPosts);
+  const [likesMap, setLikesMap] = useState<{ [postId: string]: number }>({});
+
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
   );
@@ -52,7 +54,18 @@ const Post = (data: PostData) => {
   const router = useRouter();
 
   useEffect(() => {
+    if (!data?.data || !Array.isArray(data.data)) return;
+
     setPosts(data.data);
+
+    const likesObj: { [postId: string]: number } = {};
+    data.data.forEach((post) => {
+      if (post && post.id) {
+        likesObj[post.id] = post._count?.likes ?? 0;
+      }
+    });
+    setLikesMap(likesObj);
+
     console.log("Posts data", data.data);
   }, [data]);
 
@@ -127,9 +140,17 @@ const Post = (data: PostData) => {
       if (isLiked) {
         dispatch(unlikePost(postId));
         toast("💔 Post unliked!");
+        setLikesMap((prev) => ({
+          ...prev,
+          [postId]: prev[postId] - 1,
+        }));
       } else {
         dispatch(likePost(postId));
         toast("💖 Post Liked!");
+        setLikesMap((prev) => ({
+          ...prev,
+          [postId]: prev[postId] + 1,
+        }));
       }
       fetchLikedPosts();
     } else {
@@ -229,7 +250,7 @@ const Post = (data: PostData) => {
                     )}
               </div>
               <div className="flex items-center gap-1 px-1">
-                <FaRegEye className="" /> {post._count.views}
+                <FaRegEye className="" /> {post._count.views ?? 0}
               </div>
               <div className="flex text-2xl space-x-3 justify-center w-[95%]">
                 {window.location.pathname == "/profile/public" ||
@@ -262,7 +283,8 @@ const Post = (data: PostData) => {
                     <IoMdHeart />
                   ) : (
                     <IoMdHeartEmpty />
-                  )}
+                  )}{" "}
+                  {likesMap[post.id] ?? post._count.likes ?? 0}
                 </button>
                 <button
                   onClick={() => {

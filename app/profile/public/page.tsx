@@ -12,7 +12,6 @@ import { MdVerified } from "react-icons/md";
 import FetchPublicPosts from "@/components/Post/FecthPublicPosts";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { likePost, setLikedPosts, unlikePost } from "@/store/likesSlice";
 import {
   followUser,
   setFollowedUsers,
@@ -24,6 +23,7 @@ const PublicProfilePage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fetchedUser, setFecthedUser] = useState<User | null>(null);
+  const [followersCount, setfollowersCount] = useState<number>(0);
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
   );
@@ -44,6 +44,7 @@ const PublicProfilePage = () => {
       }
       const data = await res.json();
       setUser(data.user as User);
+      console.log(data.user);
     } catch (err) {
       if (err instanceof Error) setError(err?.message as string);
     } finally {
@@ -63,9 +64,11 @@ const PublicProfilePage = () => {
       if (isFollowed) {
         dispatch(unfollowUser(email));
         toast.success(`@${username} Unfollowed!`);
+        setfollowersCount((prev) => prev - 1);
       } else {
         dispatch(followUser(email));
         toast.success(`@${username} followed!`);
+        setfollowersCount((prev) => prev + 1);
       }
       fetchFollowedUsers();
     }
@@ -75,6 +78,7 @@ const PublicProfilePage = () => {
     const res = await fetch("/api/user/followed-users");
     const data = await res.json();
     dispatch(setFollowedUsers(data.followedUsers));
+    setfollowersCount(data.followedUsers.length);
   };
 
   useEffect(() => {
@@ -122,7 +126,11 @@ const PublicProfilePage = () => {
             ""
           )}
           <p className="mt-2">{user?.name}</p>
-          <p className="mt-2 mb-2">{user?.email}</p>
+          <p className="mt-2">
+            {followersCount}{" "}
+            {user._count.followers > 1 ? "Followers" : "Follower"}{" "}
+          </p>
+          {/* <p className="mt-2 mb-2">{user?.email}</p> */}
           <p className="">{user?.bio}</p>
           <p className="">@{user?.username}</p>
           <Button

@@ -15,6 +15,14 @@ export const GET = async (req: NextRequest) => {
         where: {
           userEmail: email as string,
         },
+        include: {
+          _count: {
+            select: {
+              likes: true,
+              views: true,
+            },
+          },
+        },
       });
       return NextResponse.json({ status: 200, posts });
     }
