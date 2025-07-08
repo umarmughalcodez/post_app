@@ -95,3 +95,21 @@ export const PUT = async (req: NextRequest) => {
     }
   }
 };
+
+export const DELETE = async (req: NextRequest) => {
+  const url = new URL(req.url);
+  const commentId = url.searchParams.get("commentId");
+  try {
+    await prisma.comments.delete({
+      where: {
+        id: commentId as string,
+      },
+    });
+
+    return NextResponse.json({ status: 200 });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+  }
+};

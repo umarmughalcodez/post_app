@@ -9,6 +9,7 @@ import { MdClose, MdEdit } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { User } from "@/types/User";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 interface CommentSectionProps {
   postId: string;
@@ -89,6 +90,26 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
     }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/posts/comment?commentId=${commentId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete comment");
+      }
+      toast.success("Comment Deleted Successfully!");
+      fetchComments();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchComments();
   }, []);
@@ -130,15 +151,23 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
               </p>
               <span className="text-center">{comment.text}</span>
               {comment.userEmail === fetcheduser?.email ? (
-                <button
-                  className="bg-none text-lg absolute top-2 right-2 bg-white bg-opacity-0 rounded-full p-1 hover:bg-opacity-50 transition-opacity delay-200"
-                  onClick={() => {
-                    setShowEditPopup(true);
-                    setEditedText(comment.text); // Pre-fill the edit popup with the comment text
-                  }}
-                >
-                  <MdEdit />
-                </button>
+                <>
+                  <button
+                    className="bg-none text-lg absolute top-2 right-10 bg-white bg-opacity-0 rounded-full p-1 hover:bg-opacity-50 transition-opacity delay-200"
+                    onClick={() => {
+                      setShowEditPopup(true);
+                      setEditedText(comment.text);
+                    }}
+                  >
+                    <MdEdit />
+                  </button>
+                  <button
+                    className="bg-none text-lg absolute top-2 right-2 bg-white bg-opacity-0 rounded-full p-1 hover:bg-opacity-50 transition-opacity delay-200"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
+                    <RiDeleteBin6Line />
+                  </button>
+                </>
               ) : null}
             </li>
           ))}
