@@ -6,6 +6,7 @@ import {
 } from "next-cloudinary";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { TiUpload } from "react-icons/ti";
 
 interface ImageUploaderProps {
   onUpload: (publicId: string) => void;
@@ -38,7 +39,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
 
   return (
     <div>
-      <p className="text-white">Upload an Image</p>
       <CldUploadWidget
         uploadPreset="nextjs_posts"
         onSuccess={handleUploadSuccess}
@@ -68,7 +68,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUpload }) => {
             onClick={() => open()}
             className="bg-blue-400 hover:bg-opacity-80"
           >
-            Upload Image
+            <TiUpload /> Upload Image
           </Button>
         )}
       </CldUploadWidget>

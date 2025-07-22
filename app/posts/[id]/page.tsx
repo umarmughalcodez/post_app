@@ -68,6 +68,7 @@ const Post = () => {
     const fetchUser = async () => {
       const session = await getSession();
       setUser(session?.user as UserInterface);
+      console.log("POSTS DATA", post?.image_url);
     };
     fetchUser();
   }, []);

@@ -13,6 +13,8 @@ import aiGif from "@/public/icons8-sparkle.gif";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
 import Loading from "@/components/Loader";
+import aiGifImg from "@/public/ai gif g.gif";
+import { RiImageCircleAiFill } from "react-icons/ri";
 
 const CreatePost = () => {
   const [title, setTitle] = useState<string>("");
@@ -20,7 +22,7 @@ const CreatePost = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [publicId, setPublicId] = useState("");
+  const [publicId, setPublicId] = useState<string | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
   const [aiCooldown, setAiCooldown] = useState(false);
   const router = useRouter();
@@ -30,29 +32,21 @@ const CreatePost = () => {
     setError(null);
 
     try {
-      if (!publicId || !title || !description) {
+      if (!title || !description || !publicId) {
         setError("Please provide all the fields");
 
-        setTimeout(() => {
-          setError(null);
-        }, 2500);
+        toast.error("Please provide all the fields");
 
         return;
       }
 
-      if (title.length < 5) {
-        setError("Title must be at least 5 characters long");
-        setTimeout(() => {
-          setError(null);
-        }, 2500);
+      if (title.length < 8) {
+        toast.error("Title must be at least 8 characters long");
         return;
       }
 
-      if (description.length < 10) {
-        setError("Description must be at least 10 characters long");
-        setTimeout(() => {
-          setError(null);
-        }, 2500);
+      if (description.length < 15) {
+        toast.error("Description must be at least 15 characters long");
         return;
       }
 
@@ -69,23 +63,14 @@ const CreatePost = () => {
 
       const post = await res.json();
       const postId = await post.data.id;
-      setSuccess(true);
       toast.success("Post created Successfully!");
-      setDescription("");
-      setTitle("");
-      setPublicId("");
-      await router.push(`/posts/${postId}`);
+      router.push(`/posts/${postId}`);
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
-        setTimeout(() => {
-          setError(null);
-        }, 2500);
+        toast.error(error.message);
       } else {
-        setError("Image size should not exceed 2 mb");
-        setTimeout(() => {
-          setError(null);
-        }, 2500);
+        toast.error("Image size should not exceed 2MB");
+        return;
       }
     } finally {
       setLoading(false);
@@ -93,7 +78,7 @@ const CreatePost = () => {
   };
 
   const handleDeleteImage = async () => {
-    setPublicId("");
+    setPublicId(null);
   };
 
   const handleAiText = async () => {
@@ -115,7 +100,8 @@ const CreatePost = () => {
           messages: [
             {
               role: "user",
-              content: `Generate a random and unique social media post. Return:
+              content:
+                `Generate a random and unique social media post (In English Language). Return:
 
 1. A short and catchy post title (max 12 words) with 1 or 2 relevant hashtags
 2. A detailed description (around 80–100 words) that matches the title
@@ -172,21 +158,20 @@ Description: <your description here>  `.trim(),
       <Toaster />
       <form
         onSubmit={handleSubmit}
-        className={`w-[50%] p-5 shadow-2xl rounded-xl grid place-items-center  relative`}
+        className={`w-[50%] p-5 shadow-2xl rounded-xl grid place-items-center relative`}
       >
         <h1 className="text-2xl mb-4">Create Post</h1>
         <div className="absolute top-6 right-6 group">
           {/* Tooltip div - only visible on hover */}
-          <div className="bg-gray-500 text-white  px-2 py-1 rounded-2xl absolute -top-16 -right-28 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+          <div className="bg-gray-500 text-white text-center px-1 py-1 rounded-2xl absolute -top-16 -right-28 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
             AI auto text generation
           </div>
 
-          {/* Image */}
           <Image
-            src={showAnimation ? aiGif : ai}
+            src={showAnimation ? aiGifImg : ai}
             alt="image"
-            width={30}
-            height={30}
+            width={showAnimation ? 40 : 30}
+            height={showAnimation ? 40 : 30}
             className="hover:scale-105 transition-all delay-75 cursor-pointer"
             onClick={() => {
               handleAiText();
@@ -194,11 +179,13 @@ Description: <your description here>  `.trim(),
               setTimeout(() => setAiCooldown(false), 10000);
               if (!aiCooldown) {
                 setShowAnimation(true);
+                toast.loading("Please wait...", {
+                  duration: 3500,
+                });
               }
             }}
           />
         </div>
-
         {/* <MdAutoFixHigh
           
         /> */}
@@ -211,7 +198,6 @@ Description: <your description here>  `.trim(),
           required
           max={50}
         />
-
         <Textarea
           className="resize-none w-[85%] h-32 mb-1 mt-2 outline-1 p-3"
           placeholder="Enter description here..."
@@ -221,14 +207,17 @@ Description: <your description here>  `.trim(),
         />
         <br />
         {publicId && (
+          <Button
+            onClick={handleDeleteImage}
+            className="left-[100%] bg-none mb-3"
+            // variant={"default"}
+          >
+            <MdDelete className="bg-none" />
+          </Button>
+        )}
+
+        {publicId && (
           <>
-            <Button
-              onClick={handleDeleteImage}
-              className="left-[100%] bg-none mb-3"
-              // variant={"default"}
-            >
-              <MdDelete className="bg-none" />
-            </Button>
             <CldImage
               src={publicId}
               alt="Post's Image"
@@ -237,18 +226,18 @@ Description: <your description here>  `.trim(),
             />
           </>
         )}
-        <ImageUploader
-          onUpload={(uploadedPublicId) => setPublicId(uploadedPublicId)}
-        />
+        {!publicId && (
+          <div className="flex items-center justify-center gap-x-3">
+            <ImageUploader
+              onUpload={(uploadedPublicId) => {
+                setPublicId(uploadedPublicId);
+              }}
+            />
+          </div>
+        )}
         <br />
-
         {error && <p className="text-red-700">{error}</p>}
-        <Button
-          variant={"default"}
-          type="submit"
-          // className="bg-white"
-          // disabled={loading}
-        >
+        <Button variant={"default"} type="submit">
           create post
         </Button>
       </form>
