@@ -20,6 +20,7 @@ export const GET = async (req: NextRequest) => {
             select: {
               views: true,
               likes: true,
+              comments: true,
             },
           },
         },

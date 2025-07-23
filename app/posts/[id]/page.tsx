@@ -135,9 +135,8 @@ const Post = () => {
   }, [postId]);
 
   const deletePost = async () => {
-    setError(null);
     setFormOpen(false);
-    setDeletionSuccess(false);
+
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: "DELETE",
@@ -148,11 +147,9 @@ const Post = () => {
         throw new Error("Failed to delete post");
       }
 
-      setDeletionSuccess(true);
       toast.success("Post deleted successfully!");
-      setTimeout(() => {
-        router.push("/profile");
-      }, 1500);
+
+      router.push("/profile");
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
