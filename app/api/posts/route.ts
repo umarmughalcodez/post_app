@@ -70,6 +70,9 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
+    const io = (global as any).io;
+    io?.emit("new-post", post);
+
     return createResponse(201, "Post created successfully", post);
   } catch (error) {
     return NextResponse.json({

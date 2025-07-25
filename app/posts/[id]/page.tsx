@@ -356,9 +356,9 @@ const Post = () => {
           )}
         </div>
         <div className="flex">
-          <FaRegEye className="" /> {post?._count.views}
+          {/* <FaRegEye className="" /> {post?._count.views} */}
         </div>
-        <div>Likes: {likesCount}</div>
+        {/* <div>Likes: {likesCount}</div> */}
         <button
           onClick={() => handleLikePost(post?.id as string)}
           className="bg-none text-red-700 text-xl p-2 hover:bg-slate-200 rounded-full cursor-pointer"
