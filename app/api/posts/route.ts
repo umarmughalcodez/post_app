@@ -61,7 +61,7 @@ export const POST = async (req: NextRequest) => {
   const url = `https://res.cloudinary.com/xcorpion/image/upload/${publicId}`;
 
   try {
-    const post = await prisma.posts.create({
+    const createdPost = await prisma.posts.create({
       data: {
         title,
         description,
@@ -70,8 +70,23 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
+    const post = await prisma.posts.findUnique({
+      where: {
+        id: createdPost.id,
+      },
+      include: {
+        _count: {
+          select: {
+            views: true,
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+    });
+
     const io = (global as any).io;
-    io?.emit("new-post", post);
+    io?.emit("new-post", post, user?.name);
 
     return createResponse(201, "Post created successfully", post);
   } catch (error) {

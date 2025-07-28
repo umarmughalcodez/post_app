@@ -62,9 +62,10 @@ const CreatePost = () => {
       }
 
       const post = await res.json();
+      console.log("New-Post CS", post.data);
       const postId = await post.data.id;
       toast.success("Post created Successfully!");
-      router.push(`/posts/${postId}`);
+      // router.push(`/posts/${postId}`);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -163,7 +164,7 @@ Description: <your description here>  `.trim(),
         <h1 className="text-2xl mb-4">Create Post</h1>
         <div className="absolute top-6 right-6 group">
           {/* Tooltip div - only visible on hover */}
-          <div className="bg-gray-500 text-white text-center px-1 py-1 rounded-2xl absolute -top-16 -right-28 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+          <div className="bg-white text-black shadow-gray-500 shadow-lg text-center px-1 py-1 rounded-2xl absolute -top-16 -right-28 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
             AI auto text generation
           </div>
 
@@ -174,21 +175,15 @@ Description: <your description here>  `.trim(),
             height={showAnimation ? 40 : 30}
             className="hover:scale-105 transition-all delay-75 cursor-pointer"
             onClick={() => {
-              handleAiText();
-              setAiCooldown(true); // start cooldown
-              setTimeout(() => setAiCooldown(false), 10000);
-              if (!aiCooldown) {
-                setShowAnimation(true);
-                toast.loading("Please wait...", {
-                  duration: 3500,
-                });
+              if (showAnimation) {
+                toast.error("Please wait...");
+                return;
               }
+              handleAiText();
+              setShowAnimation(true);
             }}
           />
         </div>
-        {/* <MdAutoFixHigh
-          
-        /> */}
         <Input
           className="mt-3 rounded-lg w-[85%]"
           placeholder="Enter title here..."

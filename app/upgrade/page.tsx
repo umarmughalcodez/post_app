@@ -56,7 +56,7 @@ const Pricing = () => {
   };
 
   return (
-    <div className="w-full h-screen grid place-items-center">
+    <div className="w-full h-screen grid place-items-center items-center">
       <Toaster />
 
       {showLoading ? (
@@ -77,11 +77,11 @@ const Pricing = () => {
           </Button>
         </div>
       ) : (
-        <div className="w-full flex-col flex space-y-5 items-center justify-center mt-44 font-semibold">
-          <p className="text-xl">
+        <div className="w-full h-full flex-col flex justify-center items-center space-y-5 font-semibold mt-[-250px]">
+          <p className="text-2xl">
             Upgrade your account to premium to enjoy more benefits!
           </p>
-          <p className="text-xl">Hot Sale Live Now 🔥🔥🔥</p>
+          <p className="text-2xl">Hot Sale Live Now 🔥🔥🔥</p>
           <span className="text-2xl">Only $19.99</span>
           <Button
             type="button"

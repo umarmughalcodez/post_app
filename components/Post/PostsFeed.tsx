@@ -58,9 +58,9 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
   }, [initialPosts]);
 
   useEffect(() => {
-    socket.on("new-post", (post) => {
+    socket.on("new-post", (post, name: string) => {
       setPosts((prev) => [post, ...prev]);
-      toast.success("New Post Created!");
+      // toast.success(`${name} created a new post!`);
     });
 
     return () => {
@@ -249,9 +249,9 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
                       </div>
                     )}
               </div>
-              {/* <div className="flex items-center gap-1 px-1">
+              <div className="flex items-center gap-1 px-1">
                 <FaRegEye className="" /> {post._count.views ?? 0}
-              </div> */}
+              </div>
               <div className="flex text-2xl space-x-3 justify-center w-[95%]">
                 {window.location.pathname == "/profile/public" ||
                 authors[post.id]?.email == userEmail ? null : (
@@ -284,7 +284,7 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
                   ) : (
                     <IoMdHeartEmpty />
                   )}{" "}
-                  {/* {likesMap[post.id] ?? post._count.likes ?? 0} */}
+                  {likesMap[post.id] ?? post._count.likes ?? 0}
                 </button>
                 <button
                   onClick={() => {
