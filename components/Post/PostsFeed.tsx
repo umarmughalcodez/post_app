@@ -108,6 +108,9 @@ const PostsFeed = (data: PostData) => {
     const verifyUserEmail = async () => {
       if (!userEmail) {
         const session = await getSession();
+        if (!session?.user || session.user == undefined) {
+          setUserEmail(null);
+        }
         setUserEmail(session?.user?.email as string);
       }
     };
@@ -136,84 +139,69 @@ const PostsFeed = (data: PostData) => {
   }, [posts]);
 
   const handleLikePost = async (postId: string) => {
-    const isLiked = likedPosts.includes(postId);
-
-    if (isLiked) {
-      dispatch(unlikePost(postId));
-      toast("💔 Post unliked!");
-      setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] - 1 }));
+    if (!userEmail) {
+      toast.error("Please Login first!");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 800);
     } else {
-      dispatch(likePost(postId));
-      toast("💖 Post Liked!");
-      setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] + 1 }));
-    }
+      const isLiked = likedPosts.includes(postId);
 
-    if (likeTimeouts.current[postId]) {
-      clearTimeout(likeTimeouts.current[postId]);
-    }
-
-    likeTimeouts.current[postId] = setTimeout(async () => {
-      const res = await fetch(`/api/posts/like?postId=${postId}`);
-      if (!res.ok) {
-        toast.error("Fai;ed to update like on server");
+      if (isLiked) {
+        dispatch(unlikePost(postId));
+        toast("💔 Post unliked!");
+        setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] - 1 }));
       } else {
-        fetchLikedPosts();
+        dispatch(likePost(postId));
+        toast("💖 Post Liked!");
+        setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] + 1 }));
       }
-    }, 2500);
+
+      if (likeTimeouts.current[postId]) {
+        clearTimeout(likeTimeouts.current[postId]);
+      }
+
+      likeTimeouts.current[postId] = setTimeout(async () => {
+        const res = await fetch(`/api/posts/like?postId=${postId}`);
+        if (!res.ok) {
+          toast.error("Fai;ed to update like on server");
+        } else {
+          fetchLikedPosts();
+        }
+      }, 2500);
+    }
   };
 
-  // const handleFollow = async (email: string, username: string) => {
-  //   // const res = await fetch(`/api/user/follow?email=${email}`);
-  //   // if (res.ok) {
-  //   //   const isFollowed = followedUsers?.includes(email);
-  //   //   if (isFollowed) {
-  //   //     dispatch(unfollowUser(email));
-  //   //     toast.success(`@${username} Unfollowed!`);
-  //   //   } else {
-  //   //     dispatch(followUser(email));
-  //   //     toast.success(`@${username} followed!`);
-  //   //   }
-  //   //   fetchFollowedUsers();
-  //   // }
-
-  //   const isFollowed = followedUsers.includes(email);
-  //    if (isFollowed) {
-
-  //      dispatch(unfollowUser(email));
-  //      toast.success(`@${username} Unfollowed!`);
-  //    }
-  //      else {
-  //       dispatch(followUser(email));
-  //       toast.success(`@${username} followed!`);
-  //     }
-  //     fetchFollowedUsers();
-  //     if (followTimeouts.current[email])
-  //   }
-  // };
-
   const handleFollow = async (email: string, username: string) => {
-    const isFollowed = followedUsers.includes(email);
-
-    if (isFollowed) {
-      dispatch(unfollowUser(email));
-      toast(`${username} unfollowed!`);
+    if (!userEmail) {
+      toast.error("Please Login first!");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 800);
     } else {
-      dispatch(followUser(email));
-      toast.success(`${username} followed!`);
-    }
+      const isFollowed = followedUsers.includes(email);
 
-    if (followTimeouts.current[email]) {
-      clearTimeout(followTimeouts.current[email]);
-    }
-
-    followTimeouts.current[email] = setTimeout(async () => {
-      const res = await fetch(`/api/user/follow?email=${email}`);
-      if (!res.ok) {
-        toast.error("Failed to update follower on Server-Side");
+      if (isFollowed) {
+        dispatch(unfollowUser(email));
+        toast(`${username} unfollowed!`);
       } else {
-        fetchFollowedUsers();
+        dispatch(followUser(email));
+        toast.success(`${username} followed!`);
       }
-    }, 2500);
+
+      if (followTimeouts.current[email]) {
+        clearTimeout(followTimeouts.current[email]);
+      }
+
+      followTimeouts.current[email] = setTimeout(async () => {
+        const res = await fetch(`/api/user/follow?email=${email}`);
+        if (!res.ok) {
+          toast.error("Failed to update follower on Server-Side");
+        } else {
+          fetchFollowedUsers();
+        }
+      }, 2500);
+    }
   };
 
   const fetchFollowedUsers = async () => {

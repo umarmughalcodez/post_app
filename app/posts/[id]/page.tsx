@@ -58,6 +58,7 @@ const Post = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [user, setUser] = useState<UserInterface>();
   const [likesCount, setLikesCount] = useState<number>(0);
+  const [showComments, setShowComments] = useState(false);
 
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
@@ -416,10 +417,16 @@ const Post = () => {
         <FetchAuthorDetails userData={post?.userEmail} />
       </div>
 
-      <CommentsSection postId={post?.id as string} />
-
-      {error && <div className="text-red-700">{error}</div>}
+      {/* <div className="mt-10 mb-10"> */}
+      <Button
+        onClick={() => setShowComments(!showComments)}
+        className="mt-12 mb-8"
+      >
+        {showComments ? "Hide Comments" : "Show Comments"}
+      </Button>
+      {showComments && <CommentsSection postId={post?.id as string} />}
     </div>
+    // </div>
   );
 };
 

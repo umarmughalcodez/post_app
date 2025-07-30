@@ -31,23 +31,30 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [editedText, setEditedText] = useState("");
   const [comments, setComments] = useState<CommentProps[]>([]);
   const router = useRouter();
-  const [fetcheduser, setFetchedUser] = useState<User>();
-  const user = useSelector((state: RootState) => state.user.user);
+  const [fetcheduser, setFetchedUser] = useState<User | null>(null);
+  // const user = useSelector((state: RootState) => state.user.user);
   const [showEditPopup, setShowEditPopup] = useState(false);
 
   const handleAddComment = async () => {
-    const res = await fetch("/api/posts/comment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, postId }),
-    });
-    setText("");
-
-    if (res.ok) {
-      toast.success("Comment Added Successfully");
-      fetchComments();
+    if (!fetcheduser) {
+      toast.error("Please Sign In first!");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 500);
     } else {
-      toast.error("Failed to add comment!");
+      const res = await fetch("/api/posts/comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, postId }),
+      });
+      setText("");
+
+      if (res.ok) {
+        toast.success("Comment Added Successfully");
+        fetchComments();
+      } else {
+        toast.error("Failed to add comment!");
+      }
     }
   };
 
@@ -62,8 +69,13 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
   useEffect(() => {
     const fetchUser = async () => {
       const session = await getSession();
-      const user = session?.user;
-      setFetchedUser(user as User);
+      if (!session?.user || session.user == undefined) {
+        setFetchedUser(null);
+        return;
+      } else {
+        const user = session?.user;
+        setFetchedUser(user as User);
+      }
     };
     fetchUser();
   }, []);
@@ -122,7 +134,12 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
           className="m-3 w-[90%]"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          maxLength={1000}
+          maxLength={250}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              handleAddComment();
+            }
+          }}
         />
         <Button disabled={text.length == 0} onClick={handleAddComment}>
           <BsFillSendFill />
@@ -188,7 +205,7 @@ const CommentsSection: React.FC<CommentSectionProps> = ({ postId }) => {
               className="m-3 w-[90%]"
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
-              maxLength={1000}
+              maxLength={250}
             />
             <Button
               disabled={editedText.length == 0}
