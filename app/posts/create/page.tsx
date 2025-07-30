@@ -15,16 +15,15 @@ import toast, { Toaster } from "react-hot-toast";
 import Loading from "@/components/Loader";
 import aiGifImg from "@/public/ai gif g.gif";
 import { RiImageCircleAiFill } from "react-icons/ri";
+import { LoaderCircle } from "lucide-react";
 
 const CreatePost = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [publicId, setPublicId] = useState<string | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [aiCooldown, setAiCooldown] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,7 +61,6 @@ const CreatePost = () => {
       }
 
       const post = await res.json();
-      console.log("New-Post CS", post.data);
       const postId = await post.data.id;
       toast.success("Post created Successfully!");
       // router.push(`/posts/${postId}`);
@@ -80,14 +78,10 @@ const CreatePost = () => {
 
   const handleDeleteImage = async () => {
     setPublicId(null);
+    toast.success("Image deleted successfully!");
   };
 
   const handleAiText = async () => {
-    if (aiCooldown) {
-      toast.error("Please wait a few seconds...");
-      return;
-    } // block repeated clicks
-
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -142,18 +136,6 @@ Description: <your description here>  `.trim(),
     }
   };
 
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (success) {
-    return (
-      <div className="h-screen w-screen relative">
-        <Loading />
-      </div>
-    );
-  }
-
   return (
     <div className="text-black mt-24 grid place-items-center">
       <Toaster />
@@ -176,7 +158,7 @@ Description: <your description here>  `.trim(),
             className="hover:scale-105 transition-all delay-75 cursor-pointer"
             onClick={() => {
               if (showAnimation) {
-                toast.error("Please wait...");
+                toast.error("Please wait a few seconds...");
                 return;
               }
               handleAiText();
@@ -232,8 +214,14 @@ Description: <your description here>  `.trim(),
         )}
         <br />
         {error && <p className="text-red-700">{error}</p>}
-        <Button variant={"default"} type="submit">
-          create post
+        <Button variant={"default"} type="submit" disabled={loading}>
+          {loading ? (
+            <span className="flex">
+              Create Post <LoaderCircle />
+            </span>
+          ) : (
+            "Create Post"
+          )}
         </Button>
       </form>
     </div>

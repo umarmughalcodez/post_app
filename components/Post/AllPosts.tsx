@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Post from "./Post";
 import Loader from "@/components/Loader";
 import { Button } from "../ui/button";
+import PostsFeed from "./PostsFeed";
 
 const AllPosts = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostProps[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(4);
@@ -53,7 +53,7 @@ const AllPosts = () => {
 
   return (
     <div className="m-3 grid place-items-center">
-      <Post data={posts} />
+      <PostsFeed data={posts} />
       <div className="pagination-controls mt-4">
         <Button
           onClick={handleFirstPage}

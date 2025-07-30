@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Post from "./Post";
+import PostsFeed from "./PostsFeed";
+// import Post from "./Post";
 
 const FetchUserPosts = () => {
   const [posts, setPosts] = useState<[]>([]);
@@ -21,7 +22,11 @@ const FetchUserPosts = () => {
 
   return (
     <ul className="flex space-x-5 m-10">
-      {posts.length > 0 ? <Post data={posts} /> : <div>No posts available</div>}
+      {posts.length > 0 ? (
+        <PostsFeed data={posts} />
+      ) : (
+        <div>No posts available</div>
+      )}
     </ul>
   );
 };

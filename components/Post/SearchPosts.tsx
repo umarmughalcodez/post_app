@@ -1,13 +1,14 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import Post from "./Post";
+// import Post from "./Post";
 import Loader from "@/components/Loader";
 import { useSearchParams } from "next/navigation";
 import Loading from "@/components/Loader";
+import PostsFeed from "./PostsFeed";
 
 const SearchPosts = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostProps[]>([]);
   const [keyword, setKeyword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -132,7 +133,7 @@ const SearchPosts = () => {
       {posts.length > 0 ? (
         <div className="w-full grid place-items-center">
           {!posts && <Loading />}
-          <Post data={posts} />
+          <PostsFeed data={posts} />
         </div>
       ) : (
         showNotFound && <p>Posts Not Found</p>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Post from "./Post";
+// import Post from "./Post";
+import PostsFeed from "./PostsFeed";
 
 interface FetchPublicPostsProps {
   email: string;
@@ -24,7 +25,11 @@ const FetchPublicPosts: React.FC<FetchPublicPostsProps> = ({ email }) => {
 
   return (
     <ul className="flex space-x-5 m-10">
-      {posts.length > 0 ? <Post data={posts} /> : <div>No posts available</div>}
+      {posts.length > 0 ? (
+        <PostsFeed data={posts} />
+      ) : (
+        <div>No posts available</div>
+      )}
     </ul>
   );
 };

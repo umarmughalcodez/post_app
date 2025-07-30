@@ -16,7 +16,7 @@ interface PostData {
   data: Post[];
 }
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -36,8 +36,9 @@ import {
 import { RiShareForwardLine } from "react-icons/ri";
 import { IoMdHeart, IoMdHeartEmpty } from "react-icons/io";
 import { socket } from "@/app/socket";
+import Loader from "../Loader";
 
-const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
+const PostsFeed = (data: PostData) => {
   const dispatch = useDispatch();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -48,19 +49,20 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
   );
+  const [loading, setLoading] = useState(false);
+  const likeTimeouts = useRef<{ [postId: string]: NodeJS.Timeout }>({});
+  const followTimeouts = useRef<{ [email: string]: NodeJS.Timeout }>({});
 
   const router = useRouter();
 
   useEffect(() => {
-    setPosts(initialPosts);
-
-    console.log("Initial Posts", initialPosts);
-  }, [initialPosts]);
+    setPosts(data.data);
+  }, [data]);
 
   useEffect(() => {
-    socket.on("new-post", (post, name: string) => {
+    socket.on("new-post", (post, username: string) => {
       setPosts((prev) => [post, ...prev]);
-      // toast.success(`${name} created a new post!`);
+      toast.success(`${username} crated a new post!`);
     });
 
     return () => {
@@ -134,44 +136,84 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
   }, [posts]);
 
   const handleLikePost = async (postId: string) => {
-    const res = await fetch(`/api/posts/like?postId=${postId}`);
+    const isLiked = likedPosts.includes(postId);
 
-    if (res.ok) {
-      const isLiked = likedPosts?.includes(postId);
-      if (isLiked) {
-        dispatch(unlikePost(postId));
-        toast("💔 Post unliked!");
-        setLikesMap((prev) => ({
-          ...prev,
-          [postId]: prev[postId] - 1,
-        }));
-      } else {
-        dispatch(likePost(postId));
-        toast("💖 Post Liked!");
-        setLikesMap((prev) => ({
-          ...prev,
-          [postId]: prev[postId] + 1,
-        }));
-      }
-      fetchLikedPosts();
+    if (isLiked) {
+      dispatch(unlikePost(postId));
+      toast("💔 Post unliked!");
+      setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] - 1 }));
     } else {
-      toast.error("Failed to like post");
+      dispatch(likePost(postId));
+      toast("💖 Post Liked!");
+      setLikesMap((prev) => ({ ...prev, [postId]: prev[postId] + 1 }));
     }
+
+    if (likeTimeouts.current[postId]) {
+      clearTimeout(likeTimeouts.current[postId]);
+    }
+
+    likeTimeouts.current[postId] = setTimeout(async () => {
+      const res = await fetch(`/api/posts/like?postId=${postId}`);
+      if (!res.ok) {
+        toast.error("Fai;ed to update like on server");
+      } else {
+        fetchLikedPosts();
+      }
+    }, 2500);
   };
 
+  // const handleFollow = async (email: string, username: string) => {
+  //   // const res = await fetch(`/api/user/follow?email=${email}`);
+  //   // if (res.ok) {
+  //   //   const isFollowed = followedUsers?.includes(email);
+  //   //   if (isFollowed) {
+  //   //     dispatch(unfollowUser(email));
+  //   //     toast.success(`@${username} Unfollowed!`);
+  //   //   } else {
+  //   //     dispatch(followUser(email));
+  //   //     toast.success(`@${username} followed!`);
+  //   //   }
+  //   //   fetchFollowedUsers();
+  //   // }
+
+  //   const isFollowed = followedUsers.includes(email);
+  //    if (isFollowed) {
+
+  //      dispatch(unfollowUser(email));
+  //      toast.success(`@${username} Unfollowed!`);
+  //    }
+  //      else {
+  //       dispatch(followUser(email));
+  //       toast.success(`@${username} followed!`);
+  //     }
+  //     fetchFollowedUsers();
+  //     if (followTimeouts.current[email])
+  //   }
+  // };
+
   const handleFollow = async (email: string, username: string) => {
-    const res = await fetch(`/api/user/follow?email=${email}`);
-    if (res.ok) {
-      const isFollowed = followedUsers?.includes(email);
-      if (isFollowed) {
-        dispatch(unfollowUser(email));
-        toast.success(`@${username} Unfollowed!`);
-      } else {
-        dispatch(followUser(email));
-        toast.success(`@${username} followed!`);
-      }
-      fetchFollowedUsers();
+    const isFollowed = followedUsers.includes(email);
+
+    if (isFollowed) {
+      dispatch(unfollowUser(email));
+      toast(`${username} unfollowed!`);
+    } else {
+      dispatch(followUser(email));
+      toast.success(`${username} followed!`);
     }
+
+    if (followTimeouts.current[email]) {
+      clearTimeout(followTimeouts.current[email]);
+    }
+
+    followTimeouts.current[email] = setTimeout(async () => {
+      const res = await fetch(`/api/user/follow?email=${email}`);
+      if (!res.ok) {
+        toast.error("Failed to update follower on Server-Side");
+      } else {
+        fetchFollowedUsers();
+      }
+    }, 2500);
   };
 
   const fetchFollowedUsers = async () => {
@@ -200,6 +242,17 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
     });
     return <>{parts}</>;
   };
+
+  const formatUsername = (username: string | undefined) => {
+    if (!username) return null;
+    return username.length > 8 ? username.slice(0, 8) + "..." : username;
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (!posts) return <Loader />;
 
   return (
     <>
@@ -237,6 +290,7 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
                           width={30}
                           height={30}
                           className="rounded-full cursor-pointer"
+                          unoptimized
                         />
                         <Link
                           className="hover:underline-offset-4 hover:underline"
@@ -244,7 +298,10 @@ const PostsFeed = ({ initialPosts }: { initialPosts: Post[] }) => {
                             authors[post.id]?.email
                           }`}
                         >
-                          @{authors[post.id]?.username}
+                          @
+                          {authors[post.id]?.username
+                            ? formatUsername(authors[post.id]?.username)
+                            : null}
                         </Link>
                       </div>
                     )}
