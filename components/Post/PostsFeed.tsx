@@ -164,7 +164,7 @@ const PostsFeed = (data: PostData) => {
       likeTimeouts.current[postId] = setTimeout(async () => {
         const res = await fetch(`/api/posts/like?postId=${postId}`);
         if (!res.ok) {
-          toast.error("Fai;ed to update like on server");
+          toast.error("Failed to update like on server");
         } else {
           fetchLikedPosts();
         }

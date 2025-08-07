@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { IoCloseSharp } from "react-icons/io5";
 import Image from "next/image";
@@ -56,9 +56,12 @@ const Post = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const likedPosts = useSelector((state: RootState) => state.likes.likedPosts);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [user, setUser] = useState<UserInterface>();
+  const [user, setUser] = useState<UserInterface | null>(null);
   const [likesCount, setLikesCount] = useState<number>(0);
   const [showComments, setShowComments] = useState(false);
+  const likeTimeouts = useRef<{ [postId: string]: NodeJS.Timeout }>({});
+    const followTimeouts = useRef<{ [email: string]: NodeJS.Timeout }>({});
+    const [likesMap, setLikesMap] = useState<{ [postId: string]: number }>({});
 
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
@@ -68,7 +71,7 @@ const Post = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const session = await getSession();
-      setUser(session?.user as UserInterface);
+      setUser(session?.user as UserInterface || null);
       console.log("POSTS DATA", post?.image_url);
     };
     fetchUser();
@@ -110,7 +113,7 @@ const Post = () => {
             "You are not authenticated, Please verify Yourself first!"
           );
         }
-        setUserEmail(user.email as string);
+        setUserEmail(user.email as string || null);
 
         const res = await fetch(`/api/posts/${postId}`);
 
@@ -230,26 +233,41 @@ const Post = () => {
   }, [postId, post?.userEmail]);
 
   const handleLikePost = async (postId: string) => {
-    const res = await fetch(`/api/posts/like?postId=${postId}`);
 
-    if (res.ok) {
-      const isLiked = likedPosts?.includes(postId);
+    if (!userEmail) {
+      toast.error("Please Login first!");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 800);
+    } else {
+      const isLiked = likedPosts.includes(postId);
+
       if (isLiked) {
         dispatch(unlikePost(postId));
         toast("💔 Post unliked!");
-        fetchLikedPosts();
         setLikesCount((prev) => prev - 1);
       } else {
         dispatch(likePost(postId));
         toast("💖 Post Liked!");
-
-        fetchLikedPosts();
         setLikesCount((prev) => prev + 1);
       }
-      fetchLikedPosts();
-    } else {
-      toast.error("Failed to like post");
+
+      if (likeTimeouts.current[postId]) {
+        clearTimeout(likeTimeouts.current[postId]);
+      }
+
+      likeTimeouts.current[postId] = setTimeout(async () => {
+        const res = await fetch(`/api/posts/like?postId=${postId}`);
+        if (!res.ok) {
+          toast.error("Failed to update like on server");
+        } else {
+          fetchLikedPosts();
+        }
+      }, 2500);
     }
+
+
+    
   };
 
   if (deletionSuccess) {
