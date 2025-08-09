@@ -63,6 +63,12 @@ const CreatePost = () => {
       const post = await res.json();
       const postId = await post.data.id;
       toast.success("Post created Successfully!");
+<<<<<<< HEAD
+=======
+      toast.loading("Redirecting, Please wait...", {
+        duration: 12000,
+      });
+>>>>>>> recovered
       router.push(`/posts/${postId}`);
     } catch (error) {
       if (error instanceof Error) {

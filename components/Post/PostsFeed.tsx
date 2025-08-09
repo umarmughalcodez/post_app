@@ -37,6 +37,7 @@ import { RiShareForwardLine } from "react-icons/ri";
 import { IoMdHeart, IoMdHeartEmpty } from "react-icons/io";
 import { socket } from "@/app/socket";
 import Loader from "../Loader";
+import { setUser } from "@/store/userSlice";
 
 const PostsFeed = (data: PostData) => {
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ const PostsFeed = (data: PostData) => {
   const [loading, setLoading] = useState(false);
   const likeTimeouts = useRef<{ [postId: string]: NodeJS.Timeout }>({});
   const followTimeouts = useRef<{ [email: string]: NodeJS.Timeout }>({});
+  const user = useSelector((state: RootState) => state.user.user);
 
   const router = useRouter();
 
@@ -106,11 +108,12 @@ const PostsFeed = (data: PostData) => {
 
   useEffect(() => {
     const verifyUserEmail = async () => {
-      if (!userEmail) {
+      if (!user) {
         const session = await getSession();
         if (!session?.user || session.user == undefined) {
           setUserEmail(null);
         }
+        dispatch(setUser(session?.user as User));
         setUserEmail(session?.user?.email as string);
       }
     };
