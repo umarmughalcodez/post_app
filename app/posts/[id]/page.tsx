@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { IoCloseSharp } from "react-icons/io5";
 import Image from "next/image";
@@ -59,6 +59,8 @@ const Post = () => {
   const [user, setUser] = useState<UserInterface>();
   const [likesCount, setLikesCount] = useState<number>(0);
   const [showComments, setShowComments] = useState(false);
+  const likeTimeouts = useRef<{ [postId: string]: NodeJS.Timeout }>({});
+  const followTimeouts = useRef<{ [email: string]: NodeJS.Timeout }>({});
 
   const followedUsers = useSelector(
     (state: RootState) => state.followers.followedUsers
@@ -162,26 +164,67 @@ const Post = () => {
   };
 
   const handleFollow = async () => {
-    try {
+    if (!userEmail) {
+      toast.error("Please Login first!");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 800);
+    } else {
+      const isFollowed = followedUsers.includes(post?.userEmail as string);
+
       const res = await fetch(`/api/user/follow?email=${post?.userEmail}`);
       if (res.ok) {
         const data = await res.json();
         const username = data.user.username;
-        const isFollowed = followedUsers?.includes(post?.userEmail as string);
+
         if (isFollowed) {
           dispatch(unfollowUser(post?.userEmail as string));
-          toast.success(`@${username} Unfollowed!`);
+          toast.success(`${username} unfollowed!`);
         } else {
           dispatch(followUser(post?.userEmail as string));
-          toast.success(`@${username} followed!`);
+          toast.success(`${username} followed!`);
         }
-        fetchFollowedUsers();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(error.message);
+
+        if (followTimeouts.current[post?.userEmail as string]) {
+          clearTimeout(followTimeouts.current[post?.userEmail as string]);
+        }
+
+        followTimeouts.current[post?.userEmail as string] = setTimeout(
+          async () => {
+            const res = await fetch(
+              `/api/user/follow?email=${post?.userEmail as string}`
+            );
+            if (!res.ok) {
+              toast.error("Failed to update follower on Server-Side");
+            } else {
+              fetchFollowedUsers();
+            }
+          },
+          2500
+        );
       }
     }
+
+    // try {
+    //   const res = await fetch(`/api/user/follow?email=${post?.userEmail}`);
+    //   if (res.ok) {
+    //     const data = await res.json();
+    //     const username = data.user.username;
+    //     const isFollowed = followedUsers?.includes(post?.userEmail as string);
+    //     if (isFollowed) {
+    //       dispatch(unfollowUser(post?.userEmail as string));
+    //       toast.success(`@${username} Unfollowed!`);
+    //     } else {
+    //       dispatch(followUser(post?.userEmail as string));
+    //       toast.success(`@${username} followed!`);
+    //     }
+    //     fetchFollowedUsers();
+    //   }
+    // } catch (error) {
+    //   if (error instanceof Error) {
+    //     throw new Error(error.message);
+    //   }
+    // }
   };
 
   const fetchFollowedUsers = async () => {
@@ -230,26 +273,37 @@ const Post = () => {
   }, [postId, post?.userEmail]);
 
   const handleLikePost = async (postId: string) => {
-    const res = await fetch(`/api/posts/like?postId=${postId}`);
-
-    if (res.ok) {
-      const isLiked = likedPosts?.includes(postId);
-      if (isLiked) {
-        dispatch(unlikePost(postId));
-        toast("💔 Post unliked!");
-        fetchLikedPosts();
-        setLikesCount((prev) => prev - 1);
-      } else {
-        dispatch(likePost(postId));
-        toast("💖 Post Liked!");
-
-        fetchLikedPosts();
-        setLikesCount((prev) => prev + 1);
-      }
-      fetchLikedPosts();
-    } else {
-      toast.error("Failed to like post");
+    if (!userEmail) {
+      toast.error("Please login first");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 800);
     }
+
+    const isLiked = likedPosts?.includes(postId);
+
+    if (isLiked) {
+      dispatch(unlikePost(postId));
+      toast("💖 Post Liked!");
+      setLikesCount((prev) => prev - 1);
+    } else {
+      dispatch(likePost(postId));
+      toast("💖 Post Liked!");
+      setLikesCount((prev) => prev + 1);
+    }
+
+    if (likeTimeouts.current[postId]) {
+      clearTimeout(likeTimeouts.current[postId]);
+    }
+
+    likeTimeouts.current[postId] = setTimeout(async () => {
+      const res = await fetch(`/api/posts/like?postId=${postId}`);
+      if (!res.ok) {
+        toast.error("Failed to update like on server");
+      } else {
+        fetchLikedPosts();
+      }
+    }, 2500);
   };
 
   if (deletionSuccess) {

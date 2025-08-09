@@ -128,7 +128,7 @@ const ProfilePage = () => {
           {/* <p className="mt-2 mb-2">{user?.email}</p> */}
           <p className="">{user?.bio}</p>
           <p className="">@{user?.username}</p>
-          <p>Followers: {user?._count.followers}</p>
+          {/* <p>Followers: {user?._count.followers || 0}</p> */}
           <Link
             className="bg-red-500 rounded-xl py-1 px-2 text-white cursor-pointer"
             href={"/sign-out"}
