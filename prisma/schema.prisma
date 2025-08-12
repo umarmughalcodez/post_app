@@ -14,8 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model Posts {
   id          String       @id @default(uuid())
   title       String       @db.VarChar(100)
